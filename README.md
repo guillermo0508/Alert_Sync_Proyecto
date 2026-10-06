@@ -5,5 +5,5 @@ Utilizar GitHub como herramienta colaborativa para almacenar, organizar y llevar
 Proyecto que contiene un backend en Laravel y un frontend en Vue.js.
 ## Integrantes del equipo
 - Guillermo Amescua (Líder)
-- [Nombre de tu compañero 1]
-- [Nombre de tu compañero 2]
+- Gustavo Borrayo
+- Alan Hernandez
