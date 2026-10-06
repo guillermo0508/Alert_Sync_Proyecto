@@ -1,0 +1,25 @@
+[
+  {
+    "plan_id": "basico",
+    "name": "Básico",
+    "price_amount": 100,
+    "max_contacts": 5,
+    "features": [
+      "Hasta 5 contactos de emergencia",
+      "Soporte para Smart Watch",
+      "Alertas instantáneas"
+    ]
+  },
+  {
+    "plan_id": "premium",
+    "name": "Premium",
+    "price_amount": 200,
+    "max_contacts": 15,
+    "features": [
+      "Hasta 15 contactos de emergencia",
+      "Soporte para Smart Watch y Alexa",
+      "Dashboard exclusivo Premium",
+      "Soporte prioritario"
+    ]
+  }
+]

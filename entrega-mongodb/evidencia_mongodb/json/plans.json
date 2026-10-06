@@ -1,0 +1,17 @@
+[{
+	"_id": {
+		"$oid": "6a637e5c0a5564efd303fc66"
+	},
+	"plan_id": "basico",
+	"name": "Básico",
+	"price_amount": 100,
+	"max_contacts": 5,
+	"features": "[\"Hasta 5 contactos de emergencia\",\"Soporte para Smart Watch\",\"Alertas instant\\u00e1neas\"]",
+	"updated_at": {
+		"$date": "2026-07-24T15:02:31.996Z"
+	},
+	"created_at": {
+		"$date": "2026-07-24T15:01:48.71Z"
+	}
+}]
+

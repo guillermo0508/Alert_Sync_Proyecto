@@ -1,0 +1,88 @@
+[{
+	"_id": {
+		"$oid": "6a580f83f3309a7486018002"
+	},
+	"name": "Guillermo Amescua",
+	"email": "guillermod0508@gmail.com",
+	"phone": "3322895974",
+	"password": "$2y$12$d3A4zEkqPBc7ff2DRi71tueffqT4IdkYJt2XgsGDW8JYHJ6Pvnh2q",
+	"plan": "Premium",
+	"devices": "{\"watch\":false,\"alexa\":false}",
+	"updated_at": {
+		"$date": "2026-07-16T15:05:31.389Z"
+	},
+	"created_at": {
+		"$date": "2026-07-15T22:53:55.667Z"
+	},
+	"next_plan": null,
+	"plan_expires_at": {
+		"$date": "2026-08-15T15:05:31.387Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6a58e7f6dbef47d157086e22"
+	},
+	"name": "Guillermo Amescua",
+	"email": "guemamdi@gmail.com",
+	"phone": "3322895974",
+	"password": "$2y$12$nfnkDVcky.zEW9trL7Kxs.nVqPI0/kolEqOAEqVK1Y6WZhKHQkYBK",
+	"plan": "Premium",
+	"devices": "{\"watch\":false,\"alexa\":false}",
+	"updated_at": {
+		"$date": "2026-07-24T14:30:23.028Z"
+	},
+	"created_at": {
+		"$date": "2026-07-16T14:17:26.614Z"
+	},
+	"next_plan": null,
+	"plan_expires_at": {
+		"$date": "2026-08-15T15:14:25.951Z"
+	},
+	"status": "active"
+},
+{
+	"_id": {
+		"$oid": "6a5920bef7fa763b2e0d1907"
+	},
+	"name": "Admin Test",
+	"email": "alertsync26@gmail.com",
+	"phone": "5551234567",
+	"password": "$2y$12$5Z6WOaXauyZW3IhKl24Duu87faA1nVEWS7px7keKmGznTlXT7cKa.",
+	"plan": "Demo",
+	"plan_expires_at": null,
+	"next_plan": null,
+	"devices": "{\"watch\":false,\"alexa\":false}",
+	"updated_at": {
+		"$date": "2026-07-25T00:27:07.883Z"
+	},
+	"created_at": {
+		"$date": "2026-07-16T18:19:42.74Z"
+	},
+	"role": "admin",
+	"username": "admin",
+	"status": "active"
+},
+{
+	"_id": {
+		"$oid": "6a6026e834d44935870dd10a"
+	},
+	"name": "Guillermo Amescua",
+	"email": "jamezcua1352@gmail.com",
+	"phone": "3322895974",
+	"password": "$2y$12$Xw/OltZqB7v951Fu5eCb6.yjrs8mCzSDqUqfQ7NVaLHhSmepCTJAi",
+	"plan": "Básico",
+	"plan_expires_at": {
+		"$date": "2026-08-21T02:26:25.359Z"
+	},
+	"next_plan": null,
+	"devices": "{\"watch\":false,\"alexa\":false}",
+	"status": "active",
+	"updated_at": {
+		"$date": "2026-07-22T02:26:25.359Z"
+	},
+	"created_at": {
+		"$date": "2026-07-22T02:11:52.451Z"
+	}
+}]
+

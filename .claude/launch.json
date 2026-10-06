@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd \"/Users/guillermo05/Documents/alert sync proyecto/backend\" && php artisan serve --host=127.0.0.1 --port=8000"],
+      "port": 8000
+    },
+    {
+      "name": "frontend-vue",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd \"/Users/guillermo05/Documents/alert sync proyecto/frontend-vue\" && npm run dev"],
+      "port": 5173
+    }
+  ]
+}
