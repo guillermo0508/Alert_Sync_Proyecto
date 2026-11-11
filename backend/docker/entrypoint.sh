@@ -11,6 +11,9 @@ if [ "$RUN_MIGRATIONS" = "true" ]; then
     php artisan migrate --force || true
 fi
 
+# Discover packages now that environment is active
+php artisan package:discover --ansi || true
+
 php artisan config:cache || true
 php artisan route:cache || true
 php artisan view:cache || true

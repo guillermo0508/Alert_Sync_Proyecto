@@ -1,4 +1,7 @@
-FROM php:8.3-fpm-alpine
+FROM php:8.4-fpm-alpine
+
+# Environment variables for Composer
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # Install system dependencies and Nginx
 RUN apk add --no-cache \
@@ -6,12 +9,13 @@ RUN apk add --no-cache \
     curl \
     postgresql-dev \
     libzip-dev \
+    icu-dev \
     zip \
     unzip \
     git
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo pdo_pgsql bcmath opcache zip
+RUN docker-php-ext-install pdo pdo_pgsql bcmath opcache zip intl
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -22,8 +26,8 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
-# Install PHP dependencies without dev dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Install PHP dependencies without dev dependencies and without running scripts during build
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
