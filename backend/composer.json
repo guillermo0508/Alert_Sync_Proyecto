@@ -10,7 +10,6 @@
         "laravel/framework": "^13.8",
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^3.0",
-        "mongodb/laravel-mongodb": "^5.8",
         "symfony/console": "^7.4",
         "symfony/error-handler": "^7.4",
         "symfony/finder": "^7.4",

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/watch-login', [AuthController::class, 'loginWithWatchCode']);
     Route::post('/check-email', [AuthController::class, 'checkEmail']);
     Route::post('/verify-code', [AuthController::class, 'verifyCode']);
     Route::post('/activate', [AuthController::class, 'activate']);
@@ -38,6 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/auth/payment-method', [ProfileController::class, 'updatePaymentMethod']);
     Route::put('/auth/auto-renew', [ProfileController::class, 'updateAutoRenew']);
     Route::put('/auth/devices', [ProfileController::class, 'updateDevice']);
+    Route::get('/auth/watch-code', [AuthController::class, 'generateWatchCode']);
+    Route::post('/auth/watch-code/regenerate', [AuthController::class, 'regenerateWatchCode']);
 
     Route::apiResource('contacts', ContactController::class);
     Route::post('/contacts/{id}/resend-verification', [ContactController::class, 'resendVerification']);

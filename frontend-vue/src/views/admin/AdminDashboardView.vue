@@ -223,7 +223,7 @@ function formatMoney(value) {
           <div class="panel">
             <h3 class="section-title">💳 Pagos recientes</h3>
             <div v-if="recentPayments.length" class="mini-list">
-              <div v-for="p in recentPayments" :key="p._id" class="mini-row">
+              <div v-for="p in recentPayments" :key="p.id" class="mini-row">
                 <div>
                   <strong>{{ p.plan }}</strong>
                   <p class="text-muted text-sm">{{ formatDate(p.created_at) }}</p>
@@ -239,7 +239,7 @@ function formatMoney(value) {
           <div class="panel">
             <h3 class="section-title">🚨 Alertas SOS recientes</h3>
             <div v-if="recentAlerts.length" class="mini-list">
-              <div v-for="a in recentAlerts" :key="a._id" class="mini-row">
+              <div v-for="a in recentAlerts" :key="a.id" class="mini-row">
                 <div>
                   <strong>{{ a.source }}</strong>
                   <p class="text-muted text-sm">{{ a.message }}</p>

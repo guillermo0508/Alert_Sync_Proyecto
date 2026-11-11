@@ -118,11 +118,12 @@ function formatDate(value) {
           </div>
           
           <div class="stat-box glass-panel accent-lime">
-            <div class="stat-icon">📡</div>
+            <div class="stat-icon">⌚</div>
             <div class="stat-info">
-              <h3>2</h3>
-              <p>Dispositivos (Watch + Alexa)</p>
+              <h3>{{ auth.user?.devices?.watch ? 'Conectado' : 'Sin vincular' }}</h3>
+              <p>Smartwatch (Código)</p>
             </div>
+            <RouterLink to="/dashboard/smartwatch-code" class="stat-link" title="Obtener código de acceso">→</RouterLink>
           </div>
           
           <div class="stat-box glass-panel accent-red">
@@ -152,6 +153,29 @@ function formatDate(value) {
         </div>
       </div>
 
+      <!-- Smartwatch Quick Pairing Banner -->
+      <div class="watch-banner glass-panel">
+        <div class="watch-banner-left">
+          <div class="watch-badge-circle">⌚</div>
+          <div>
+            <h3>Código de Acceso para Smartwatch</h3>
+            <p>
+              Genera tu código de 6 dígitos para iniciar sesión instantáneamente desde la app de tu reloj inteligente Wear OS.
+              Sin contraseñas difíciles en pantallas pequeñas.
+            </p>
+            <div class="watch-meta-tags">
+              <span class="tag-status" :class="{ on: auth.user?.devices?.watch }">
+                {{ auth.user?.devices?.watch ? '🟢 Smartwatch Vinculado' : '⚪ Esperando Vinculación' }}
+              </span>
+              <span class="tag-auto">⚡ Sincronización Automática</span>
+            </div>
+          </div>
+        </div>
+        <RouterLink to="/dashboard/smartwatch-code" class="btn btn-primary watch-btn-action">
+          {{ auth.user?.devices?.watch ? 'Ver / Generar Código ⌚' : 'Obtener Código de Acceso ⌚' }}
+        </RouterLink>
+      </div>
+
       <!-- Historical Data -->
       <div class="history-section glass-panel">
         <div class="history-header">
@@ -160,7 +184,7 @@ function formatDate(value) {
         </div>
         
         <div class="history-list" v-if="alerts.length">
-          <div v-for="alert in alerts" :key="alert._id" class="history-item">
+          <div v-for="alert in alerts" :key="alert.id" class="history-item">
             <div class="history-icon">⚡</div>
             <div class="history-details">
               <h4>Alerta {{ alert.source }}</h4>
@@ -477,7 +501,85 @@ function formatDate(value) {
 
 .empty-state p { color: var(--text-secondary); font-size: 1.1rem; }
 
+.watch-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, rgba(159,211,45,0.08) 0%, rgba(29,93,110,0.15) 100%);
+  border: 1px solid rgba(159,211,45,0.25);
+}
+
+.watch-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.watch-badge-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: rgba(159,211,45,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  flex-shrink: 0;
+}
+
+.watch-banner-left h3 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-bottom: 0.35rem;
+}
+
+.watch-banner-left p {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  max-width: 600px;
+  line-height: 1.5;
+  margin-bottom: 0.75rem;
+}
+
+.watch-meta-tags {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.tag-status {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,0.06);
+  color: var(--text-muted);
+}
+
+.tag-status.on {
+  background: rgba(34,197,94,0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34,197,94,0.3);
+}
+
+.tag-auto {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(159,211,45,0.12);
+  color: var(--brand-lime);
+}
+
+.watch-btn-action {
+  white-space: nowrap;
+  padding: 0.85rem 1.75rem;
+  font-weight: 700;
+}
+
 @media (max-width: 1024px) {
+  .watch-banner { flex-direction: column; align-items: flex-start; }
   .grid-layout { grid-template-columns: 1fr; }
   .premium-header { padding: 2rem; }
   .premium-content { padding: 1.5rem; }

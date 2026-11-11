@@ -25,13 +25,13 @@ class PaymentController extends Controller
         $payments = $query->orderBy('created_at', 'desc')->get();
 
         $userIds = $payments->pluck('user_id')->unique()->values()->all();
-        $users = User::whereIn('_id', $userIds)->get()->keyBy(fn (User $u) => (string) $u->_id);
+        $users = User::whereIn('id', $userIds)->get()->keyBy(fn (User $u) => (string) $u->id);
 
         $formatted = $payments->map(function (Payment $payment) use ($users) {
             $user = $users->get($payment->user_id);
 
             return [
-                'id' => (string) $payment->_id,
+                'id' => (string) $payment->id,
                 'user_id' => $payment->user_id,
                 'user_name' => $user?->name ?? 'Usuario eliminado',
                 'user_email' => $user?->email ?? '—',

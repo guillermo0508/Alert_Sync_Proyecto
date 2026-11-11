@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
 
@@ -123,6 +124,15 @@ async function unlink() {
           </div>
         </div>
         <div class="modal-actions">
+          <RouterLink
+            v-if="device === 'watch'"
+            to="/dashboard/smartwatch-code"
+            class="btn btn-primary"
+            style="text-align:center; text-decoration:none"
+            @click="close"
+          >
+            🔢 Ver código de Smartwatch
+          </RouterLink>
           <button class="btn btn-secondary" @click="startScan">Vincular otro dispositivo</button>
           <button class="btn btn-danger-outline" @click="unlink">Desvincular</button>
         </div>
@@ -130,8 +140,19 @@ async function unlink() {
 
       <!-- No vinculado, estado inicial -->
       <div v-else-if="phase === 'idle'" class="idle-state">
-        <p class="hint-text">Vincula tu {{ label }} para recibir alertas SOS desde el dispositivo.</p>
-        <button class="btn btn-primary w-full" @click="startScan">🔗 Buscar dispositivos</button>
+        <p class="hint-text">Vincula tu {{ label }} para recibir y enviar alertas SOS desde el dispositivo.</p>
+        <div style="display:flex; flex-direction:column; gap: var(--space-3)">
+          <RouterLink
+            v-if="device === 'watch'"
+            to="/dashboard/smartwatch-code"
+            class="btn btn-primary w-full"
+            style="text-align:center; text-decoration:none"
+            @click="close"
+          >
+            🔢 Obtener código de acceso para Smartwatch
+          </RouterLink>
+          <button class="btn btn-secondary w-full" @click="startScan">🔗 Buscar por Bluetooth</button>
+        </div>
       </div>
 
       <!-- Escaneando -->

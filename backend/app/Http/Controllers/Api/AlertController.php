@@ -12,7 +12,7 @@ class AlertController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $alerts = Alert::where('user_id', (string) $request->user()->_id)
+        $alerts = Alert::where('user_id', $request->user()->id)
             ->orderBy('created_at', 'desc')
             ->limit(50)
             ->get();
@@ -22,18 +22,22 @@ class AlertController extends Controller
 
     public function trigger(Request $request): JsonResponse
     {
+        if (! $request->filled('source')) {
+            $request->merge(['source' => 'watch']);
+        }
+
         $validated = $request->validate([
-            'source' => ['required', 'in:watch,alexa,dashboard,dashboard-premium,web,simulator'],
+            'source' => ['required', 'in:watch,alexa,dashboard,dashboard-premium,mobile,web,simulator'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'message' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $userId = (string) $request->user()->_id;
+        $userId = $request->user()->id;
         $contacts = Contact::where('user_id', $userId)->orderBy('priority')->get();
 
         $notified = $contacts->map(fn (Contact $contact) => [
-            'id' => (string) $contact->_id,
+            'id' => (string) $contact->id,
             'name' => $contact->name,
             'phone' => $contact->phone,
             'email' => $contact->email,

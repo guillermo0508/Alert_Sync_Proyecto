@@ -23,10 +23,14 @@ const navItems = computed(() => {
   const items = []
 
   if (isDemo.value) {
-    items.push({ to: '/dashboard/sos', name: 'sos', icon: '👀', label: 'Explorar Planes', badge: 'DEMO' })
+    items.push(
+      { to: '/dashboard/sos', name: 'sos', icon: '👀', label: 'Explorar Planes', badge: 'DEMO' },
+      { to: '/dashboard/smartwatch-code', name: 'smartwatch-code', icon: '⌚', label: 'Código Reloj' },
+    )
   } else {
     items.push(
       { to: '/dashboard', name: 'dashboard', icon: '🏠', label: 'Menú' },
+      { to: '/dashboard/smartwatch-code', name: 'smartwatch-code', icon: '⌚', label: 'Código Reloj' },
       { to: '/dashboard/contacts', name: 'contacts', icon: '👥', label: 'Contactos' },
       { to: '/dashboard/alerts', name: 'my-alerts', icon: '📋', label: 'Historial' },
     )

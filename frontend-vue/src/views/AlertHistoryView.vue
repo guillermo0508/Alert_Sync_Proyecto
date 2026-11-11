@@ -22,6 +22,7 @@ const sourceLabels = {
   alexa: '🔊 Alexa',
   dashboard: '🌐 Dashboard',
   'dashboard-premium': '🌐 Dashboard Premium',
+  mobile: '📱 App móvil',
   web: '🌐 Web',
   simulator: '🖥️ Simulador',
 }
@@ -50,7 +51,7 @@ function formatDate(value) {
       <div v-if="loading" class="text-muted">Cargando historial...</div>
 
       <div v-else-if="alerts.length" class="alerts-list">
-        <div v-for="alert in alerts" :key="alert._id" class="alert-item">
+        <div v-for="alert in alerts" :key="alert.id" class="alert-item">
           <div class="alert-icon">🚨</div>
           <div class="alert-body">
             <div class="alert-top">

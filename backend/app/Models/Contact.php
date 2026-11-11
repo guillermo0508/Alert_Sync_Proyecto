@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
-use MongoDB\Laravel\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model;
 
 #[Fillable([
     'user_id', 'name', 'phone', 'email', 'relationship', 'notify_sms', 'notify_call', 'notify_email', 'priority',
@@ -13,10 +13,6 @@ use MongoDB\Laravel\Eloquent\Model;
 #[Hidden(['verification_token'])]
 class Contact extends Model
 {
-    protected $connection = 'mongodb';
-
-    protected $collection = 'contacts';
-
     protected function casts(): array
     {
         return [
@@ -31,6 +27,6 @@ class Contact extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 }

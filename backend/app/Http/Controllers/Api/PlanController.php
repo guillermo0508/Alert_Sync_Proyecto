@@ -91,7 +91,7 @@ class PlanController extends Controller
         $formattedExpiresAt = $user->plan_expires_at->format('d/m/Y');
 
         Payment::create([
-            'user_id' => (string) $user->_id,
+            'user_id' => $user->id,
             'plan' => $targetPlan,
             'amount' => $planAmount,
             'currency' => 'MXN',

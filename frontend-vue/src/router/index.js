@@ -77,6 +77,11 @@ const router = createRouter({
           name: 'profile',
           component: () => import('@/views/ProfileView.vue'),
         },
+        {
+          path: 'smartwatch-code',
+          name: 'smartwatch-code',
+          component: () => import('@/views/SmartwatchCodeView.vue'),
+        },
       ],
     },
     {

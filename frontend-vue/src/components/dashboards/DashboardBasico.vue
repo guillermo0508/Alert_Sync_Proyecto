@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
 
@@ -56,6 +57,24 @@ function formatDate(value) {
         </div>
       </div>
 
+      <!-- Card de acceso y código Smartwatch -->
+      <div class="watch-access-card">
+        <div class="watch-access-left">
+          <div class="watch-icon-badge">⌚</div>
+          <div>
+            <h3>Código de Acceso para Smartwatch</h3>
+            <p>
+              {{ auth.user?.devices?.watch
+                ? 'Tu reloj está vinculado. Puedes obtener un código nuevo o abrir el simulador interactivo.'
+                : 'Genera un código de 6 dígitos para iniciar sesión automáticamente en la app de tu Smartwatch.' }}
+            </p>
+          </div>
+        </div>
+        <RouterLink to="/dashboard/smartwatch-code" class="btn btn-primary" style="white-space:nowrap">
+          {{ auth.user?.devices?.watch ? 'Ver Código / Reloj ⌚' : 'Obtener Código Smartwatch ⌚' }}
+        </RouterLink>
+      </div>
+
       <div class="stats-grid">
         <div class="stat-card red">
           <div class="stat-value">{{ alerts.length }}</div>
@@ -84,7 +103,7 @@ function formatDate(value) {
           <h3>🚨 Panel de Alerta SOS</h3>
           <p>El botón SOS solo se activa desde tu <strong>Smart Watch</strong> vinculado o la <strong>app móvil</strong> de ALERTSYNC. Al activarse, se notificará a tus contactos con ubicación y mensaje de ayuda.</p>
           <div v-if="contacts.length" class="contacts-preview">
-            <div v-for="c in contacts.slice(0, 3)" :key="c._id" class="contact-row">
+            <div v-for="c in contacts.slice(0, 3)" :key="c.id" class="contact-row">
               <span>{{ c.name }}</span>
               <span class="text-muted">{{ c.phone || c.email }}</span>
             </div>
@@ -95,7 +114,7 @@ function formatDate(value) {
 
       <h3 class="section-title">📋 Historial de alertas</h3>
       <div v-if="alerts.length" class="alerts-list">
-        <div v-for="alert in alerts" :key="alert._id || alert.created_at" class="alert-item">
+        <div v-for="alert in alerts" :key="alert.id || alert.created_at" class="alert-item">
           <div class="alert-icon">🚨</div>
           <div>
             <strong>Alerta SOS — {{ alert.source }}</strong>
@@ -174,7 +193,23 @@ function formatDate(value) {
   width: 40px; height: 40px; border-radius: var(--radius-md);
   background: rgba(255,59,59,0.12); display: flex; align-items: center; justify-content: center;
 }
+.watch-access-card {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-6);
+  background: linear-gradient(135deg, rgba(159,211,45,0.12), rgba(29,93,110,0.15));
+  border: 1px solid rgba(159,211,45,0.3); border-radius: var(--radius-xl);
+  padding: var(--space-6) var(--space-8); margin-bottom: var(--space-8);
+}
+.watch-access-left { display: flex; align-items: center; gap: var(--space-5); }
+.watch-icon-badge {
+  font-size: 2.2rem; width: 56px; height: 56px; border-radius: 16px;
+  background: rgba(159,211,45,0.15); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.watch-access-left h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: var(--space-1); }
+.watch-access-left p { color: var(--text-secondary); font-size: 0.9rem; max-width: 520px; }
+
 @media (max-width: 768px) {
+  .watch-access-card { flex-direction: column; align-items: flex-start; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .sos-panel { flex-direction: column; }
 }

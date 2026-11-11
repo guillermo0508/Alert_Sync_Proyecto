@@ -25,8 +25,8 @@ async function loadContacts() {
   loading.value = true
   if (auth.token === 'demo-token') {
     contacts.value = [
-      { _id: '1', name: 'Mamá', phone: '+52 33 1111 2222', notify_sms: true, notify_call: true },
-      { _id: '2', name: 'Papá', phone: '+52 33 3333 4444', notify_sms: true },
+      { id: '1', name: 'Mamá', phone: '+52 33 1111 2222', notify_sms: true, notify_call: true },
+      { id: '2', name: 'Papá', phone: '+52 33 3333 4444', notify_sms: true },
     ]
     loading.value = false
     return
@@ -45,7 +45,7 @@ async function saveContact() {
   error.value = ''
   try {
     if (auth.token === 'demo-token') {
-      contacts.value.push({ ...form.value, _id: String(Date.now()) })
+      contacts.value.push({ ...form.value, id: String(Date.now()) })
     } else {
       const { data } = await api.post('/contacts', form.value)
       contacts.value.push(data.contact)
@@ -59,22 +59,22 @@ async function saveContact() {
 
 async function removeContact(id) {
   if (auth.token === 'demo-token') {
-    contacts.value = contacts.value.filter(c => c._id !== id)
+    contacts.value = contacts.value.filter(c => c.id !== id)
     return
   }
   await api.delete(`/contacts/${id}`)
-  contacts.value = contacts.value.filter(c => c._id !== id)
+  contacts.value = contacts.value.filter(c => c.id !== id)
 }
 
 const resendingId = ref(null)
 const toast = ref('')
 
 async function resendVerification(contact) {
-  resendingId.value = contact._id
+  resendingId.value = contact.id
   error.value = ''
   toast.value = ''
   try {
-    const { data } = await api.post(`/contacts/${contact._id}/resend-verification`)
+    const { data } = await api.post(`/contacts/${contact.id}/resend-verification`)
     toast.value = data.message
     setTimeout(() => { toast.value = '' }, 4000)
   } catch (e) {
@@ -127,7 +127,7 @@ function channels(contact) {
       <div v-if="loading" class="text-muted">Cargando contactos...</div>
 
       <div v-else-if="contacts.length" class="contacts-grid">
-        <div v-for="contact in contacts" :key="contact._id" class="contact-card">
+        <div v-for="contact in contacts" :key="contact.id" class="contact-card">
           <div class="contact-header">
             <div class="avatar">{{ contact.name.charAt(0) }}</div>
             <div>
@@ -146,12 +146,12 @@ function channels(contact) {
           <button
             v-if="contact.email && !contact.verified"
             class="link-btn mt-2"
-            :disabled="resendingId === contact._id"
+            :disabled="resendingId === contact.id"
             @click="resendVerification(contact)"
           >
-            {{ resendingId === contact._id ? 'Enviando...' : 'Reenviar confirmación' }}
+            {{ resendingId === contact.id ? 'Enviando...' : 'Reenviar confirmación' }}
           </button>
-          <button class="btn btn-secondary btn-sm mt-4" @click="removeContact(contact._id)">Eliminar</button>
+          <button class="btn btn-secondary btn-sm mt-4" @click="removeContact(contact.id)">Eliminar</button>
         </div>
       </div>
 

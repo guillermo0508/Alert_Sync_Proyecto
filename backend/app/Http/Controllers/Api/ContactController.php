@@ -20,7 +20,7 @@ class ContactController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $contacts = Contact::where('user_id', (string) $request->user()->_id)
+        $contacts = Contact::where('user_id', $request->user()->id)
             ->orderBy('priority')
             ->get();
 
@@ -30,7 +30,7 @@ class ContactController extends Controller
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
-        $currentCount = Contact::where('user_id', (string) $user->_id)->count();
+        $currentCount = Contact::where('user_id', $user->id)->count();
 
         $planId = match ($user->plan) {
             'Premium' => 'premium',
@@ -59,7 +59,7 @@ class ContactController extends Controller
 
         $contact = Contact::create([
             ...$validated,
-            'user_id' => (string) $request->user()->_id,
+            'user_id' => $request->user()->id,
             'notify_sms' => $validated['notify_sms'] ?? true,
             'notify_call' => $validated['notify_call'] ?? false,
             'notify_email' => $validated['notify_email'] ?? false,
@@ -202,8 +202,8 @@ class ContactController extends Controller
 
     private function findUserContact(Request $request, string $id): Contact
     {
-        return Contact::where('_id', $id)
-            ->where('user_id', (string) $request->user()->_id)
+        return Contact::whereKey($id)
+            ->where('user_id', $request->user()->id)
             ->firstOrFail();
     }
 }

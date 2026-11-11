@@ -104,7 +104,6 @@ class AuthController extends Controller
             ]);
         }
 
-        $user->tokens()->delete();
         $token = $user->createToken('alertsync-web')->plainTextToken;
 
         return response()->json([
@@ -455,4 +454,93 @@ class AuthController extends Controller
         }
     }
 
+    public function generateWatchCode(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->watch_access_code && $user->watch_access_code_expires_at && $user->watch_access_code_expires_at->isFuture()) {
+            $code = $user->watch_access_code;
+        } else {
+            $code = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+            $user->watch_access_code = $code;
+            $user->watch_access_code_expires_at = now()->addMinutes(15);
+            $user->save();
+        }
+
+        $remainingSeconds = max(0, now()->diffInSeconds($user->watch_access_code_expires_at, false));
+
+        return response()->json([
+            'code' => $code,
+            'expires_at' => $user->watch_access_code_expires_at->toIso8601String(),
+            'expires_in_seconds' => $remainingSeconds,
+            'is_linked' => (bool) ($user->devices['watch'] ?? false),
+            'watch_name' => $user->device_names['watch'] ?? null,
+        ]);
+    }
+
+    public function regenerateWatchCode(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $code = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+        $user->watch_access_code = $code;
+        $user->watch_access_code_expires_at = now()->addMinutes(15);
+        $user->save();
+
+        return response()->json([
+            'code' => $code,
+            'expires_at' => $user->watch_access_code_expires_at->toIso8601String(),
+            'expires_in_seconds' => 15 * 60,
+            'is_linked' => (bool) ($user->devices['watch'] ?? false),
+            'watch_name' => $user->device_names['watch'] ?? null,
+        ]);
+    }
+
+    public function loginWithWatchCode(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'code' => ['required', 'string'],
+        ]);
+
+        $code = trim($validated['code']);
+
+        $user = User::where('watch_access_code', $code)
+            ->where('watch_access_code_expires_at', '>', now())
+            ->first();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'El código de acceso es incorrecto o ha expirado.',
+            ], 422);
+        }
+
+        if (! $user->isActive()) {
+            return response()->json([
+                'message' => 'La cuenta vinculada a este código no se encuentra activa.',
+            ], 403);
+        }
+
+        // Link smartwatch device
+        $devices = $user->devices ?? [];
+        $devices['watch'] = true;
+        $user->devices = $devices;
+
+        $deviceNames = $user->device_names ?? [];
+        if (empty($deviceNames['watch'])) {
+            $deviceNames['watch'] = 'Smartwatch ALERTSYNC';
+        }
+        $user->device_names = $deviceNames;
+
+        // Clear code to prevent reuse
+        $user->watch_access_code = null;
+        $user->watch_access_code_expires_at = null;
+        $user->save();
+
+        $token = $user->createToken('alertsync-watch')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Sesión iniciada exitosamente en el Smartwatch.',
+            'token' => $token,
+            'user' => $this->formatUser($user),
+        ]);
+    }
 }

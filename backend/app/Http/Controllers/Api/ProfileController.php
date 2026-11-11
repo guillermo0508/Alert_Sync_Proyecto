@@ -30,7 +30,7 @@ class ProfileController extends Controller
 
         $email = strtolower($validated['email']);
         $existing = User::where('email', $email)->first();
-        if ($existing && (string) $existing->_id !== (string) $user->_id) {
+        if ($existing && $existing->id !== $user->id) {
             throw ValidationException::withMessages([
                 'email' => ['Este correo ya está en uso por otra cuenta.'],
             ]);

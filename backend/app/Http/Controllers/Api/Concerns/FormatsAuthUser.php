@@ -8,14 +8,18 @@ trait FormatsAuthUser
 {
     protected function formatUser(User $user): array
     {
+        $planExpiresAt = $user->plan_expires_at?->toIso8601String();
+
         return [
-            'id' => (string) $user->_id,
+            'id' => (string) $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'username' => $user->username ?? null,
             'phone' => $user->phone,
             'plan' => $user->plan ?? 'Demo',
-            'plan_expires_at' => $user->plan_expires_at ? $user->plan_expires_at->toIso8601String() : null,
+            'plan_expires_at' => $planExpiresAt,
+            'planExpiresAt' => $planExpiresAt,
+            'fechaCorte' => $planExpiresAt,
             'next_plan' => $user->next_plan,
             'devices' => $user->devices ?? ['watch' => false, 'alexa' => false],
             'device_names' => $user->device_names ?? ['watch' => null, 'alexa' => null],

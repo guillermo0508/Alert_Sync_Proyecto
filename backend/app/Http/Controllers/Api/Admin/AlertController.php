@@ -21,13 +21,13 @@ class AlertController extends Controller
         $alerts = $query->orderBy('created_at', 'desc')->limit(200)->get();
 
         $userIds = $alerts->pluck('user_id')->unique()->values()->all();
-        $users = User::whereIn('_id', $userIds)->get()->keyBy(fn (User $u) => (string) $u->_id);
+        $users = User::whereIn('id', $userIds)->get()->keyBy(fn (User $u) => (string) $u->id);
 
         $formatted = $alerts->map(function (Alert $alert) use ($users) {
             $user = $users->get($alert->user_id);
 
             return [
-                'id' => (string) $alert->_id,
+                'id' => (string) $alert->id,
                 'user_id' => $alert->user_id,
                 'user_name' => $user?->name ?? 'Usuario eliminado',
                 'user_email' => $user?->email ?? '—',

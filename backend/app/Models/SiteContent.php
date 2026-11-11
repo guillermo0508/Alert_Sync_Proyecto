@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use MongoDB\Laravel\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model;
 
 #[Fillable([
     'hero_badge', 'hero_title', 'hero_subtitle',
@@ -12,10 +12,6 @@ use MongoDB\Laravel\Eloquent\Model;
 ])]
 class SiteContent extends Model
 {
-    protected $connection = 'mongodb';
-
-    protected $collection = 'site_content';
-
     protected function casts(): array
     {
         return [

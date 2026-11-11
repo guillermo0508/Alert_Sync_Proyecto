@@ -142,16 +142,16 @@ class UserController extends Controller
         if (isset($validated['email'])) {
             $validated['email'] = strtolower($validated['email']);
             // Admins are allowed to share a contact email with other admins.
-            if ($targetRole !== 'admin' && User::where('email', $validated['email'])->where('_id', '!=', $id)->exists()) {
+            if ($targetRole !== 'admin' && User::where('email', $validated['email'])->where('id', '!=', $id)->exists()) {
                 return response()->json(['message' => 'Este correo ya está en uso por otro usuario.'], 422);
             }
         }
 
-        if (! empty($validated['username']) && User::where('username', $validated['username'])->where('_id', '!=', $id)->exists()) {
+        if (! empty($validated['username']) && User::where('username', $validated['username'])->where('id', '!=', $id)->exists()) {
             return response()->json(['message' => 'Ese nombre de usuario ya está en uso.'], 422);
         }
 
-        if (array_key_exists('role', $validated) && $validated['role'] !== 'admin' && $user->role === 'admin' && (string) $request->user()->_id === $id) {
+        if (array_key_exists('role', $validated) && $validated['role'] !== 'admin' && $user->role === 'admin' && (string) $request->user()->id === $id) {
             return response()->json(['message' => 'No puedes quitarte el rol de administrador a ti mismo.'], 422);
         }
 
@@ -187,7 +187,7 @@ class UserController extends Controller
 
     public function destroy(Request $request, string $id): JsonResponse
     {
-        if ((string) $request->user()->_id === $id) {
+        if ((string) $request->user()->id === $id) {
             return response()->json(['message' => 'No puedes eliminar tu propia cuenta de administrador.'], 422);
         }
 
@@ -219,7 +219,7 @@ class UserController extends Controller
 
     public function destroyContact(Request $request, string $userId, string $contactId): JsonResponse
     {
-        $contact = Contact::where('_id', $contactId)->where('user_id', $userId)->firstOrFail();
+        $contact = Contact::whereKey($contactId)->where('user_id', $userId)->firstOrFail();
         $contact->delete();
 
         return response()->json(['message' => 'Contacto eliminado correctamente.']);
@@ -241,7 +241,7 @@ class UserController extends Controller
 
     private function formatUser(User $user): array
     {
-        $id = (string) $user->_id;
+        $id = (string) $user->id;
 
         return [
             'id' => $id,

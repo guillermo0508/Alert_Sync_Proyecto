@@ -3,15 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use MongoDB\Laravel\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model;
 
 #[Fillable(['plan_id', 'name', 'price_amount', 'features', 'max_contacts'])]
 class Plan extends Model
 {
-    protected $connection = 'mongodb';
-
-    protected $collection = 'plans';
-
     protected function casts(): array
     {
         return [
