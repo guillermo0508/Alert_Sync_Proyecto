@@ -1,0 +1,12 @@
+{
+  "name": "alertsync-mail-relay",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Envía los correos de AlertSync por SMTP de Gmail (desplegado en Vercel).",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "nodemailer": "^6.9.16"
+  }
+}

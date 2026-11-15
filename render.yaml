@@ -38,6 +38,22 @@ services:
         value: file
       - key: QUEUE_CONNECTION
         value: sync
+      # Correo: el plan gratuito de Render bloquea los puertos SMTP (25, 465, 587).
+      # Laravel pasa cada correo por HTTPS al servicio mail-relay (Vercel, carpeta mail-relay/),
+      # que lo envía por SMTP de Gmail (smtp.gmail.com:587) desde alertsync26@gmail.com.
+      - key: MAIL_MAILER
+        value: relay
+      - key: MAIL_RELAY_URL
+        sync: false   # ej. https://alertsync-mail-relay.vercel.app/api/send
+      - key: MAIL_RELAY_SECRET
+        sync: false   # misma clave que RELAY_SECRET en Vercel
+      - key: MAIL_FROM_ADDRESS
+        value: alertsync26@gmail.com
+      - key: MAIL_FROM_NAME
+        value: "Alert Sync"
+      # Errores (incluidos los de correo) visibles en la pestaña Logs de Render.
+      - key: LOG_CHANNEL
+        value: stderr
 
   # Frontend: Vue 3 Single Page Application (Static Site)
   - type: web

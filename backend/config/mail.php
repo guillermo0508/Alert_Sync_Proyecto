@@ -37,6 +37,13 @@ return [
 
     'mailers' => [
 
+        // Servicio mail-relay en Vercel → SMTP de Gmail (ver AppServiceProvider).
+        'relay' => [
+            'transport' => 'relay',
+            'endpoint' => env('MAIL_RELAY_URL'),
+            'secret' => env('MAIL_RELAY_SECRET'),
+        ],
+
         'smtp' => [
             'transport' => 'smtp',
             'scheme' => env('MAIL_SCHEME'),
