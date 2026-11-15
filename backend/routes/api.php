@@ -47,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/alerts', [AlertController::class, 'index']);
     Route::post('/alerts/sos', [AlertController::class, 'trigger']);
+    Route::post('/alerts/{id}/cancel', [AlertController::class, 'cancel']);
 
     Route::post('/plans/change', [PlanController::class, 'change']);
 
