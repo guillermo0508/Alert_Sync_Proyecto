@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardControll
 use App\Http\Controllers\Api\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\AlertController;
+use App\Http\Controllers\Api\PaymentController as UserPaymentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\PlanController;
@@ -48,6 +49,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/alerts', [AlertController::class, 'index']);
     Route::post('/alerts/sos', [AlertController::class, 'trigger']);
     Route::post('/alerts/{id}/cancel', [AlertController::class, 'cancel']);
+
+    Route::get('/payments', [UserPaymentController::class, 'index']);
 
     Route::post('/plans/change', [PlanController::class, 'change']);
 
