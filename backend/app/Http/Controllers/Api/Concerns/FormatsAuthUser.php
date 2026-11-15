@@ -16,6 +16,8 @@ trait FormatsAuthUser
             'email' => $user->email,
             'username' => $user->username ?? null,
             'phone' => $user->phone,
+            'blood_type' => $user->blood_type,
+            'allergies' => $user->allergies,
             'plan' => $user->plan ?? 'Demo',
             'plan_expires_at' => $planExpiresAt,
             'planExpiresAt' => $planExpiresAt,

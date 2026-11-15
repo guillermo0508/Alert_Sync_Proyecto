@@ -21,6 +21,8 @@ class SosAlert extends Mailable
         public string $sentAt,
         public ?string $mapsUrl = null,
         public ?string $ownerPhone = null,
+        public ?string $bloodType = null,
+        public ?string $allergies = null,
     ) {}
 
     public function envelope(): Envelope

@@ -15,10 +15,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
     'password_reset_code', 'password_reset_code_expires_at', 'password_reset_token', 'password_reset_token_expires_at',
     'payment_card_last_four', 'payment_card_name', 'payment_card_expiry', 'auto_renew',
     'watch_access_code', 'watch_access_code_expires_at',
+    'blood_type', 'allergies', 'payment_access_code', 'payment_access_code_expires_at',
 ])]
 #[Hidden([
     'password', 'remember_token', 'activation_code', 'activation_token',
-    'password_reset_code', 'password_reset_token', 'watch_access_code',
+    'password_reset_code', 'password_reset_token', 'watch_access_code', 'payment_access_code',
 ])]
 class User extends Authenticatable
 {
@@ -37,6 +38,7 @@ class User extends Authenticatable
             'password_reset_code_expires_at' => 'datetime',
             'password_reset_token_expires_at' => 'datetime',
             'watch_access_code_expires_at' => 'datetime',
+            'payment_access_code_expires_at' => 'datetime',
             'auto_renew' => 'boolean',
         ];
     }

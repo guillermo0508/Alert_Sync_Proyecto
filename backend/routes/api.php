@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\AlertController;
 use App\Http\Controllers\Api\PaymentController as UserPaymentController;
+use App\Http\Controllers\Api\MedicalController;
+use App\Http\Controllers\Api\PaymentAccessController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\PlanController;
@@ -39,6 +41,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/auth/profile', [ProfileController::class, 'update']);
     Route::put('/auth/payment-method', [ProfileController::class, 'updatePaymentMethod']);
     Route::put('/auth/auto-renew', [ProfileController::class, 'updateAutoRenew']);
+    Route::put('/auth/medical', [MedicalController::class, 'update']);
+    Route::post('/auth/payment-access/send', [PaymentAccessController::class, 'send']);
+    Route::post('/auth/payment-access/verify', [PaymentAccessController::class, 'verify']);
     Route::put('/auth/devices', [ProfileController::class, 'updateDevice']);
     Route::get('/auth/watch-code', [AuthController::class, 'generateWatchCode']);
     Route::post('/auth/watch-code/regenerate', [AuthController::class, 'regenerateWatchCode']);

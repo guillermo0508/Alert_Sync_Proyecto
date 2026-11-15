@@ -74,8 +74,9 @@ class AlertController extends Controller
         // Los correos se envían después de responder, para que la app no espere al servidor SMTP.
         $ownerName = $user->name ?: 'Un usuario de ALERT SYNC';
         $ownerPhone = $user->phone ?: null;
-        dispatch(function () use ($alert, $notified, $ownerName, $ownerPhone) {
-            $this->sendSosEmails($alert, $notified, $ownerName, $ownerPhone);
+        $medical = ['blood_type' => $user->blood_type ?: null, 'allergies' => $user->allergies ?: null];
+        dispatch(function () use ($alert, $notified, $ownerName, $ownerPhone, $medical) {
+            $this->sendSosEmails($alert, $notified, $ownerName, $ownerPhone, $medical);
         })->afterResponse();
 
         return response()->json([
@@ -134,7 +135,7 @@ class AlertController extends Controller
         return ($date ?? now())->copy()->timezone(self::MAIL_TIMEZONE)->format('d/m/Y h:i A');
     }
 
-    private function sendSosEmails(Alert $alert, array $notified, string $ownerName, ?string $ownerPhone): void
+    private function sendSosEmails(Alert $alert, array $notified, string $ownerName, ?string $ownerPhone, array $medical = []): void
     {
         $mapsUrl = ($alert->latitude !== null && $alert->longitude !== null)
             ? "https://www.google.com/maps/search/?api=1&query={$alert->latitude},{$alert->longitude}"
@@ -153,6 +154,8 @@ class AlertController extends Controller
                     sentAt: $sentAt,
                     mapsUrl: $mapsUrl,
                     ownerPhone: $ownerPhone,
+                    bloodType: $medical['blood_type'] ?? null,
+                    allergies: $medical['allergies'] ?? null,
                 ));
             } catch (\Throwable $e) {
                 Log::error("Error enviando correo SOS (alerta {$alert->id}) a {$contact['email']}: " . $e->getMessage());

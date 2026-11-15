@@ -37,6 +37,26 @@
                   📞 Teléfono: <a href="tel:{{ $ownerPhone }}" style="color:#9FD32D; font-weight:700;">{{ $ownerPhone }}</a>
                 </p>
               @endif
+              @if ($bloodType || $allergies)
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px; background-color:#0B1330; border-radius:12px; border:1px solid rgba(229,57,53,0.5);">
+                  <tr>
+                    <td style="padding:12px 16px;">
+                      <p style="font-size:13px; font-weight:800; color:#FF6B6B; margin:0 0 8px;">🩺 FICHA MÉDICA</p>
+                      @if ($bloodType)
+                        <p style="font-size:14px; color:#94A3B8; margin:0 0 4px;">
+                          Tipo de sangre: <strong style="font-size:18px; color:#F1F5F9;">{{ $bloodType }}</strong>
+                        </p>
+                      @endif
+                      @if ($allergies)
+                        <p style="font-size:14px; color:#94A3B8; margin:0;">
+                          Alergias: <strong style="color:#F1F5F9;">{{ $allergies }}</strong>
+                        </p>
+                      @endif
+                      <p style="font-size:12px; color:#64748B; margin:8px 0 0;">Comparte esta información con los servicios de emergencia si es necesario.</p>
+                    </td>
+                  </tr>
+                </table>
+              @endif
             </td>
           </tr>
 
