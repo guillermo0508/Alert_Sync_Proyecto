@@ -65,6 +65,15 @@ module.exports = async (req, res) => {
       subject: body.subject,
       html: body.html || undefined,
       text: body.text || undefined,
+      // Adjuntos; los "en línea" llevan cid para que el HTML muestre imágenes como el logo.
+      attachments: (Array.isArray(body.attachments) ? body.attachments : []).map((a) => ({
+        filename: a.filename || 'adjunto',
+        content: a.content,
+        encoding: 'base64',
+        contentType: a.content_type || undefined,
+        cid: a.cid || undefined,
+        contentDisposition: a.inline ? 'inline' : 'attachment',
+      })),
     });
     return res.status(200).json({ ok: true, messageId: info.messageId, accepted: info.accepted });
   } catch (error) {

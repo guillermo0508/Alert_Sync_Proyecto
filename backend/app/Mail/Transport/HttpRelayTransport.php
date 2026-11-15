@@ -9,6 +9,7 @@ use Symfony\Component\Mailer\Transport\AbstractTransport;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mime\MessageConverter;
+use Symfony\Component\Mime\Part\DataPart;
 
 /**
  * Envía los correos al servicio `mail-relay` (Vercel), que los manda por SMTP de Gmail.
@@ -42,6 +43,7 @@ class HttpRelayTransport extends AbstractTransport
                 'subject' => $email->getSubject(),
                 'html' => $email->getHtmlBody(),
                 'text' => $email->getTextBody(),
+                'attachments' => $this->attachments($email),
             ]);
 
         if (! $response->successful()) {
@@ -49,6 +51,25 @@ class HttpRelayTransport extends AbstractTransport
                 'El servicio de correo respondió ' . $response->status() . ': ' . $response->body()
             );
         }
+    }
+
+    /**
+     * Adjuntos del correo en base64. Los "en línea" (p. ej. el logo de las plantillas,
+     * insertado con $message->embed()) conservan su Content-ID para que el HTML los muestre.
+     */
+    private function attachments(Email $email): array
+    {
+        return array_map(function (DataPart $part) {
+            $isInline = $part->getDisposition() === 'inline';
+
+            return [
+                'filename' => $part->getFilename() ?? 'adjunto',
+                'content' => base64_encode($part->getBody()),
+                'content_type' => $part->getMediaType() . '/' . $part->getMediaSubtype(),
+                'cid' => $isInline ? $part->getContentId() : null,
+                'inline' => $isInline,
+            ];
+        }, $email->getAttachments());
     }
 
     public function __toString(): string

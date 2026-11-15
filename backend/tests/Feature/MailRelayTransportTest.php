@@ -39,6 +39,17 @@ class MailRelayTransportTest extends TestCase
                 && str_contains($request['html'], 'https://maps.example')
                 && $request['from_name'] === 'Alert Sync';
         });
+
+        // El logo incrustado viaja como adjunto en línea y el HTML lo referencia por su cid.
+        Http::assertSent(function (Request $request) {
+            $logo = collect($request['attachments'])->firstWhere('inline', true);
+
+            return $logo !== null
+                && $logo['content_type'] === 'image/png'
+                && ! empty($logo['cid'])
+                && str_contains($request['html'], 'cid:' . $logo['cid'])
+                && base64_decode($logo['content']) === file_get_contents(resource_path('mail-assets/logo.png'));
+        });
     }
 
     public function test_relay_error_is_reported(): void
