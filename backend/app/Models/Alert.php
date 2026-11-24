@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['user_id', 'source', 'status', 'latitude', 'longitude', 'message', 'contacts_notified', 'metadata'])]
+#[Fillable(['user_id', 'source', 'status', 'latitude', 'longitude', 'message', 'contacts_notified', 'metadata', 'user_deleted_at'])]
 class Alert extends Model
 {
     protected function casts(): array
@@ -15,6 +15,7 @@ class Alert extends Model
             'longitude' => 'float',
             'contacts_notified' => 'array',
             'metadata' => 'array',
+            'user_deleted_at' => 'datetime',
         ];
     }
 

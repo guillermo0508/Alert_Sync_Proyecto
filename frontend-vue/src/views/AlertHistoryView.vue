@@ -1,21 +1,73 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import api from '@/services/api'
 
+/** Tiempo real: lo que se borre o envíe desde el celular o el reloj aparece solo. */
+const REFRESH_MS = 15_000
+
 const alerts = ref([])
+const deletedCount = ref(0)
 const loading = ref(true)
 const error = ref('')
+const notice = ref('')
+const busy = ref(false)
+let timer = null
 
-onMounted(async () => {
+async function load({ silent = false } = {}) {
   try {
     const { data } = await api.get('/alerts')
-    alerts.value = data.alerts
+    alerts.value = data.alerts || []
+    deletedCount.value = data.deleted_count || 0
+    if (openMap.value && !alerts.value.some((a) => a.id === openMap.value)) openMap.value = null
+    error.value = ''
   } catch (e) {
-    error.value = e.response?.data?.message || 'No se pudo cargar tu historial de alertas.'
+    if (!silent) error.value = e.response?.data?.message || 'No se pudo cargar tu historial de alertas.'
   } finally {
     loading.value = false
   }
+}
+
+function onVisibility() { if (!document.hidden) load({ silent: true }) }
+
+onMounted(() => {
+  load()
+  timer = setInterval(() => { if (!document.hidden && !busy.value) load({ silent: true }) }, REFRESH_MS)
+  document.addEventListener('visibilitychange', onVisibility)
 })
+onBeforeUnmount(() => {
+  clearInterval(timer)
+  document.removeEventListener('visibilitychange', onVisibility)
+})
+
+async function run(action, message) {
+  busy.value = true
+  notice.value = ''
+  try {
+    await action()
+    notice.value = message
+    await load({ silent: true })
+  } catch (e) {
+    error.value = e.response?.data?.message || 'No se pudo actualizar el historial.'
+  } finally {
+    busy.value = false
+  }
+}
+
+function deleteAlert(alert) {
+  if (!confirm('¿Borrar esta alerta? Desaparecerá también del celular y del reloj.')) return
+  alerts.value = alerts.value.filter((a) => a.id !== alert.id)
+  run(() => api.delete(`/alerts/${alert.id}`), 'Alerta borrada en la web, el celular y el reloj.')
+}
+
+function deleteAll() {
+  if (!confirm(`¿Borrar todo tu historial (${alerts.value.length} alertas)? Desaparecerá también del celular y del reloj.`)) return
+  alerts.value = []
+  run(() => api.post('/alerts/clear'), 'Historial borrado en la web, el celular y el reloj.')
+}
+
+function restoreAll() {
+  run(() => api.post('/alerts/restore'), 'Se recuperaron las alertas borradas.')
+}
 
 const sourceLabels = {
   watch: '⌚ Smartwatch',
@@ -54,12 +106,21 @@ function formatDate(value) {
     <div class="topbar">
       <div>
         <h1>Mi Historial de Alertas</h1>
-        <p>Registro de todas tus activaciones SOS</p>
+        <p>Registro de todas tus activaciones SOS · sincronizado con tu celular y tu reloj</p>
+      </div>
+      <div class="topbar-actions">
+        <button v-if="deletedCount" class="btn btn-secondary btn-sm" :disabled="busy" @click="restoreAll">
+          ↩️ Recuperar borradas ({{ deletedCount }})
+        </button>
+        <button v-if="alerts.length" class="btn btn-secondary btn-sm btn-delete" :disabled="busy" @click="deleteAll">
+          🗑️ Borrar todo
+        </button>
       </div>
     </div>
 
     <div class="page-content">
       <div v-if="error" class="error-box">{{ error }}</div>
+      <div v-if="notice" class="notice-box" @click="notice = ''">{{ notice }}</div>
       <div v-if="loading" class="text-muted">Cargando historial...</div>
 
       <div v-else-if="alerts.length" class="alerts-list">
@@ -83,6 +144,9 @@ function formatDate(value) {
                 📍 {{ openMap === alert.id ? 'Ocultar mapa' : 'Ver ubicación' }}
               </button>
               <span v-if="alert.status === 'cancelled'" class="badge badge-gray">Cancelada</span>
+              <button type="button" class="badge badge-gray map-toggle delete-one" :disabled="busy" @click="deleteAlert(alert)">
+                🗑️ Borrar
+              </button>
             </div>
             <div v-if="openMap === alert.id" class="alert-map">
               <iframe :src="mapEmbedUrl(alert)" loading="lazy" title="Ubicación de la alerta" />
@@ -102,7 +166,7 @@ function formatDate(value) {
 
 <style scoped>
 .topbar {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap;
   padding: var(--space-4) var(--space-8);
   background: var(--surface-nav); border-bottom: 1px solid var(--glass-border);
   position: sticky; top: 0; z-index: 40;
@@ -129,6 +193,14 @@ function formatDate(value) {
 .alert-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); }
 .alert-message { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: var(--space-3); }
 .alert-meta { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.topbar-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.btn-delete { color: var(--danger); }
+.delete-one { margin-left: auto; }
+.delete-one:hover { color: var(--danger); }
+.notice-box {
+  padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); cursor: pointer;
+  background: rgba(16,185,129,0.1); border-radius: var(--radius-md); color: var(--success);
+}
 .map-toggle { cursor: pointer; font: inherit; font-size: inherit; }
 .alert-map { margin-top: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
 .alert-map iframe { width: 100%; height: 260px; border: 0; border-radius: var(--radius-md); }

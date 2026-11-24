@@ -59,6 +59,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/alerts', [AlertController::class, 'index']);
     Route::post('/alerts/sos', [AlertController::class, 'trigger']);
+    Route::post('/alerts/clear', [AlertController::class, 'clear']);
+    Route::post('/alerts/restore', [AlertController::class, 'restore']);
+    Route::delete('/alerts/{id}', [AlertController::class, 'destroy']);
     Route::post('/alerts/{id}/cancel', [AlertController::class, 'cancel']);
 
     Route::post('/readings', [DeviceReadingController::class, 'store'])->middleware('throttle:120,1');

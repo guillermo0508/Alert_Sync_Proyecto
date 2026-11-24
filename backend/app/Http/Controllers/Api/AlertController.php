@@ -20,12 +20,60 @@ class AlertController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $alerts = Alert::where('user_id', $request->user()->id)
+        $userId = $request->user()->id;
+        $alerts = Alert::where('user_id', $userId)
+            ->whereNull('user_deleted_at')
             ->orderBy('created_at', 'desc')
             ->limit(50)
-            ->get();
+            ->get()
+            ->makeHidden('user_deleted_at');
 
-        return response()->json(['alerts' => $alerts]);
+        return response()->json([
+            'alerts' => $alerts,
+            // Permite a las apps mostrar "Recuperar borradas" solo cuando hay algo que recuperar.
+            'deleted_count' => Alert::where('user_id', $userId)->whereNotNull('user_deleted_at')->count(),
+        ]);
+    }
+
+    /** Borra una alerta del historial del usuario (en la web, el celular y el reloj). */
+    public function destroy(Request $request, string $id): JsonResponse
+    {
+        $alert = Alert::where('user_id', $request->user()->id)->whereNull('user_deleted_at')->find($id);
+        if (! $alert) {
+            return response()->json(['message' => 'Alerta no encontrada.'], 404);
+        }
+        $alert->update(['user_deleted_at' => now()]);
+
+        return response()->json(['message' => 'Alerta borrada del historial.', 'deleted' => 1]);
+    }
+
+    /**
+     * Borra varias alertas (`ids`) o, si no se envían, todo el historial del usuario.
+     */
+    public function clear(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'ids' => ['sometimes', 'array', 'max:500'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $query = Alert::where('user_id', $request->user()->id)->whereNull('user_deleted_at');
+        if (array_key_exists('ids', $data)) {
+            $query->whereIn('id', $data['ids']);
+        }
+        $deleted = $query->update(['user_deleted_at' => now()]);
+
+        return response()->json(['message' => 'Historial actualizado.', 'deleted' => $deleted]);
+    }
+
+    /** Recupera todas las alertas que el usuario había borrado de su historial. */
+    public function restore(Request $request): JsonResponse
+    {
+        $restored = Alert::where('user_id', $request->user()->id)
+            ->whereNotNull('user_deleted_at')
+            ->update(['user_deleted_at' => null]);
+
+        return response()->json(['message' => 'Alertas recuperadas.', 'restored' => $restored]);
     }
 
     public function trigger(Request $request): JsonResponse
