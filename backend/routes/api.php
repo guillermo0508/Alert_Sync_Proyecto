@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\PaymentAccessController;
 use App\Http\Controllers\Api\PaymentCardController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\DeviceReadingController;
 use App\Http\Controllers\Api\PlanController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\SiteContentController;
@@ -59,6 +60,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/alerts', [AlertController::class, 'index']);
     Route::post('/alerts/sos', [AlertController::class, 'trigger']);
     Route::post('/alerts/{id}/cancel', [AlertController::class, 'cancel']);
+
+    Route::post('/readings', [DeviceReadingController::class, 'store'])->middleware('throttle:120,1');
+    Route::get('/readings/latest', [DeviceReadingController::class, 'latest']);
+    Route::get('/readings', [DeviceReadingController::class, 'index']);
 
     Route::get('/payments', [UserPaymentController::class, 'index']);
 

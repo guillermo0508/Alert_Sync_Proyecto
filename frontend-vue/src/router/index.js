@@ -78,6 +78,11 @@ const router = createRouter({
           component: () => import('@/views/ProfileView.vue'),
         },
         {
+          path: 'monitor',
+          name: 'monitor',
+          component: () => import('@/views/MonitorView.vue'),
+        },
+        {
           path: 'smartwatch-code',
           name: 'smartwatch-code',
           component: () => import('@/views/SmartwatchCodeView.vue'),

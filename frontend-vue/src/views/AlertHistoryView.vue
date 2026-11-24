@@ -31,6 +31,18 @@ function sourceLabel(source) {
   return sourceLabels[source] || source
 }
 
+const openMap = ref(null)
+
+function mapEmbedUrl(alert) {
+  const lat = Number(alert.latitude), lng = Number(alert.longitude)
+  const d = 0.004
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${lng - d},${lat - d},${lng + d},${lat + d}&marker=${lat},${lng}&layer=mapnik`
+}
+
+function mapsUrl(alert) {
+  return `https://www.google.com/maps?q=${alert.latitude},${alert.longitude}`
+}
+
 function formatDate(value) {
   if (!value) return '—'
   return new Date(value).toLocaleString('es-MX', { dateStyle: 'long', timeStyle: 'short' })
@@ -61,7 +73,20 @@ function formatDate(value) {
             <p class="alert-message">{{ alert.message }}</p>
             <div class="alert-meta">
               <span class="badge badge-cyan">{{ alert.contacts_notified?.length || 0 }} contactos notificados</span>
-              <span v-if="alert.latitude && alert.longitude" class="badge badge-gray">📍 Con ubicación</span>
+              <button
+                v-if="alert.latitude && alert.longitude"
+                type="button"
+                class="badge badge-gray map-toggle"
+                :aria-expanded="openMap === alert.id"
+                @click="openMap = openMap === alert.id ? null : alert.id"
+              >
+                📍 {{ openMap === alert.id ? 'Ocultar mapa' : 'Ver ubicación' }}
+              </button>
+              <span v-if="alert.status === 'cancelled'" class="badge badge-gray">Cancelada</span>
+            </div>
+            <div v-if="openMap === alert.id" class="alert-map">
+              <iframe :src="mapEmbedUrl(alert)" loading="lazy" title="Ubicación de la alerta" />
+              <a :href="mapsUrl(alert)" target="_blank" rel="noopener" class="text-sm">Abrir en Google Maps ↗</a>
             </div>
           </div>
         </div>
@@ -104,6 +129,9 @@ function formatDate(value) {
 .alert-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); }
 .alert-message { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: var(--space-3); }
 .alert-meta { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.map-toggle { cursor: pointer; font: inherit; font-size: inherit; }
+.alert-map { margin-top: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
+.alert-map iframe { width: 100%; height: 260px; border: 0; border-radius: var(--radius-md); }
 .empty-state {
   text-align: center; padding: var(--space-16); color: var(--text-muted);
   background: var(--glass-bg); border-radius: var(--radius-xl);

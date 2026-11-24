@@ -31,6 +31,8 @@ import ThemeToggle from '@/components/ThemeToggle.vue'
         <li>Datos de identificación: nombre, correo electrónico, teléfono.</li>
         <li>Datos de tus contactos de emergencia: nombre, teléfono, correo, relación.</li>
         <li>Datos de ubicación (GPS) al momento de activar una alerta SOS.</li>
+        <li>Ubicación aproximada de tu celular mientras tienes abierta la app AlertSync, solo si autorizaste el acceso a la ubicación.</li>
+        <li>Signos vitales que mide tu Smart Watch (ritmo cardíaco, oxígeno en sangre, pasos y temperatura de la piel) y el nivel de batería de tus dispositivos.</li>
         <li>Datos de dispositivos vinculados (Smart Watch, Alexa).</li>
         <li>Últimos 4 dígitos de tarjeta y nombre del titular, para procesar pagos de suscripción. No almacenamos el número completo de tarjeta ni el CVV.</li>
       </ul>
@@ -44,7 +46,8 @@ import ThemeToggle from '@/components/ThemeToggle.vue'
       </ul>
 
       <h2>4. Datos de ubicación y emergencia</h2>
-      <p>Tu ubicación solo se captura y comparte con tus contactos de emergencia en el momento en que activas una alerta SOS desde tu Smart Watch o app móvil. No monitoreamos tu ubicación de forma continua.</p>
+      <p>Tu ubicación se comparte con tus contactos de emergencia únicamente en el momento en que activas una alerta SOS desde tu Smart Watch o app móvil.</p>
+      <p>Además, mientras la app AlertSync está abierta en tu celular, este envía su ubicación cada pocos minutos y el reloj envía tus signos vitales, para mostrarlos en la sección <strong>En vivo</strong> de tu panel. Esta información solo la puedes ver tú con tu sesión; no se envía a tus contactos ni a terceros. Las lecturas se borran automáticamente después de 30 días, y puedes dejar de enviarlas en cualquier momento quitando el permiso de ubicación o desvinculando tu reloj.</p>
 
       <h2>5. Con quién compartimos tus datos</h2>
       <p>Compartimos la información necesaria de tu alerta (mensaje y ubicación) únicamente con los contactos de emergencia que tú configuraste. No vendemos ni compartimos tus datos personales con terceros para fines publicitarios.</p>

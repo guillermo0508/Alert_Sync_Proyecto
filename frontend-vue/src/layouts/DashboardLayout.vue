@@ -30,6 +30,7 @@ const navItems = computed(() => {
   } else {
     items.push(
       { to: '/dashboard', name: 'dashboard', icon: '🏠', label: 'Menú' },
+      { to: '/dashboard/monitor', name: 'monitor', icon: '📡', label: 'En vivo' },
       { to: '/dashboard/smartwatch-code', name: 'smartwatch-code', icon: '⌚', label: 'Código Reloj' },
       { to: '/dashboard/contacts', name: 'contacts', icon: '👥', label: 'Contactos' },
       { to: '/dashboard/alerts', name: 'my-alerts', icon: '📋', label: 'Historial' },
