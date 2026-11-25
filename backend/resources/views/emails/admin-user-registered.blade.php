@@ -81,7 +81,7 @@
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="background-color:#9FD32D; border-radius:999px;">
-                    <a href="{{ config('app.frontend_url', 'http://localhost:5173') . '/login' }}"
+                    <a href="{{ \App\Support\FrontendUrl::to('login') }}"
                        style="display:inline-block; padding:14px 32px; color:#101835; font-weight:800; font-size:14px; text-decoration:none; font-family: 'Segoe UI', Helvetica, Arial, sans-serif;">
                       Ir a Iniciar Sesión
                     </a>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\ContactVerification;
 use App\Models\Contact;
 use App\Models\Plan;
+use App\Support\FrontendUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -68,7 +69,7 @@ class ContactController extends Controller
         ]);
 
         if ($contact->email) {
-            $this->issueVerification($contact, $user->name);
+            $this->issueVerification($contact, $user->name, $request);
         }
 
         return response()->json([
@@ -105,7 +106,7 @@ class ContactController extends Controller
 
         if ($emailChanged) {
             if ($contact->email) {
-                $this->issueVerification($contact->fresh(), $request->user()->name);
+                $this->issueVerification($contact->fresh(), $request->user()->name, $request);
             } else {
                 $contact->verified = false;
                 $contact->verification_token = null;
@@ -145,7 +146,7 @@ class ContactController extends Controller
             return response()->json(['message' => 'Ya se envió una confirmación hace poco. Espera unos minutos antes de reenviar.'], 429);
         }
 
-        $this->issueVerification($contact, $request->user()->name);
+        $this->issueVerification($contact, $request->user()->name, $request);
 
         return response()->json(['message' => "Se reenvió el correo de confirmación a {$contact->email}."]);
     }
@@ -182,7 +183,7 @@ class ContactController extends Controller
         return response()->json(['message' => 'Contacto confirmado correctamente.', 'contact_name' => $contact->name]);
     }
 
-    private function issueVerification(Contact $contact, string $ownerName): void
+    private function issueVerification(Contact $contact, string $ownerName, Request $request): void
     {
         $token = Str::random(40);
         $contact->verification_token = Hash::make($token);
@@ -190,8 +191,8 @@ class ContactController extends Controller
         $contact->verified = false;
         $contact->save();
 
-        $verifyUrl = rtrim(config('app.frontend_url', 'http://localhost:5173'), '/')
-            . "/verify-contact/{$contact->id}?token={$token}";
+        // El enlace apunta a la página web desde la que se guardó el contacto (o a FRONTEND_URL).
+        $verifyUrl = FrontendUrl::to("verify-contact/{$contact->id}?token={$token}", $request);
 
         try {
             Mail::to($contact->email)->send(new ContactVerification($contact->name, $ownerName, $verifyUrl));
