@@ -9,6 +9,8 @@ const loading = ref(true)
 const success = ref(false)
 const message = ref('')
 const contactName = ref('')
+/** 'accept' (Confirmar que acepto) o 'decline' (No acepto), según el botón del correo. */
+const action = route.query.action === 'decline' ? 'decline' : 'accept'
 
 onMounted(async () => {
   const token = route.query.token
@@ -21,12 +23,12 @@ onMounted(async () => {
   }
 
   try {
-    const { data } = await api.post(`/contacts/${id}/verify`, { token })
+    const { data } = await api.post(`/contacts/${id}/${action === 'decline' ? 'decline' : 'verify'}`, { token })
     success.value = true
     message.value = data.message
     contactName.value = data.contact_name || ''
   } catch (e) {
-    message.value = e.response?.data?.message || 'No se pudo confirmar el contacto.'
+    message.value = e.response?.data?.message || (action === 'decline' ? 'No se pudo registrar tu respuesta.' : 'No se pudo confirmar el contacto.')
   } finally {
     loading.value = false
   }
@@ -41,12 +43,14 @@ onMounted(async () => {
 
     <div class="verify-card">
       <div v-if="loading" class="verify-icon">⏳</div>
+      <div v-else-if="success && action === 'decline'" class="verify-icon">👋</div>
       <div v-else-if="success" class="verify-icon success">✅</div>
       <div v-else class="verify-icon error">⚠️</div>
 
-      <h1 v-if="loading">Confirmando...</h1>
+      <h1 v-if="loading">{{ action === 'decline' ? 'Registrando tu respuesta...' : 'Confirmando...' }}</h1>
+      <h1 v-else-if="success && action === 'decline'">Invitación rechazada</h1>
       <h1 v-else-if="success">¡Confirmado{{ contactName ? `, gracias` : '' }}!</h1>
-      <h1 v-else>No se pudo confirmar</h1>
+      <h1 v-else>{{ action === 'decline' ? 'No se pudo rechazar' : 'No se pudo confirmar' }}</h1>
 
       <p>{{ loading ? 'Un momento por favor.' : message }}</p>
 

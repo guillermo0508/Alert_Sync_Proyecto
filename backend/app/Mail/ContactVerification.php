@@ -14,12 +14,16 @@ class ContactVerification extends Mailable
     public $contactName;
     public $ownerName;
     public $verifyUrl;
+    public $declineUrl;
+    public $responseMinutes;
 
-    public function __construct($contactName, $ownerName, $verifyUrl)
+    public function __construct($contactName, $ownerName, $verifyUrl, $declineUrl = null, $responseMinutes = 15)
     {
         $this->contactName = $contactName;
         $this->ownerName = $ownerName;
         $this->verifyUrl = $verifyUrl;
+        $this->declineUrl = $declineUrl;
+        $this->responseMinutes = $responseMinutes;
     }
 
     public function envelope(): Envelope

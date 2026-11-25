@@ -32,7 +32,8 @@ Route::prefix('auth')->group(function () {
 
 // Public routes
 Route::get('/plans', [PlanController::class, 'index']);
-Route::post('/contacts/{id}/verify', [ContactController::class, 'verify']);
+Route::post('/contacts/{id}/verify', [ContactController::class, 'verify'])->middleware('throttle:20,1');
+Route::post('/contacts/{id}/decline', [ContactController::class, 'decline'])->middleware('throttle:20,1');
 Route::get('/site-content', [SiteContentController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {

@@ -16,8 +16,8 @@ use Illuminate\Support\Str;
 
 class ContactController extends Controller
 {
-    private const VERIFICATION_TTL_DAYS = 7;
-    private const RESEND_COOLDOWN_MINUTES = 2;
+    /** Mientras la invitación sigue pendiente, no se puede reenviar antes de este tiempo. */
+    private const RESEND_COOLDOWN_MINUTES = 1;
 
     public function index(Request $request): JsonResponse
     {
@@ -109,6 +109,7 @@ class ContactController extends Controller
                 $this->issueVerification($contact->fresh(), $request->user()->name, $request);
             } else {
                 $contact->verified = false;
+                $contact->declined_at = null;
                 $contact->verification_token = null;
                 $contact->verification_token_expires_at = null;
                 $contact->save();
@@ -141,9 +142,12 @@ class ContactController extends Controller
             return response()->json(['message' => 'Este contacto ya está confirmado.'], 422);
         }
 
-        $cooldownEnd = now()->addDays(self::VERIFICATION_TTL_DAYS)->subMinutes(self::RESEND_COOLDOWN_MINUTES);
-        if ($contact->verification_token_expires_at && $contact->verification_token_expires_at->gt($cooldownEnd)) {
-            return response()->json(['message' => 'Ya se envió una confirmación hace poco. Espera unos minutos antes de reenviar.'], 429);
+        // Solo mientras sigue pendiente: evita enviar varios correos seguidos.
+        if ($contact->status === Contact::STATUS_PENDING) {
+            $sentAt = $contact->verification_token_expires_at->copy()->subMinutes(Contact::RESPONSE_MINUTES);
+            if ($sentAt->gt(now()->subMinutes(self::RESEND_COOLDOWN_MINUTES))) {
+                return response()->json(['message' => 'Ya se envió una confirmación hace poco. Espera un minuto antes de reenviar.'], 429);
+            }
         }
 
         $this->issueVerification($contact, $request->user()->name, $request);
@@ -164,38 +168,80 @@ class ContactController extends Controller
         }
 
         if ($contact->verified) {
-            return response()->json(['message' => 'Este contacto ya había sido confirmado.', 'contact_name' => $contact->name]);
+            return response()->json(['message' => 'Este contacto ya había sido confirmado.', 'contact_name' => $contact->name, 'status' => $contact->status]);
         }
 
-        if (! $contact->verification_token || ! $contact->verification_token_expires_at || $contact->verification_token_expires_at->isPast()) {
-            return response()->json(['message' => 'El enlace de confirmación expiró. Pide que te reenvíen la invitación.'], 422);
-        }
-
-        if (! Hash::check($validated['token'], $contact->verification_token)) {
-            return response()->json(['message' => 'Enlace de confirmación inválido.'], 422);
+        if ($error = $this->invitationError($contact, $validated['token'])) {
+            return $error;
         }
 
         $contact->verified = true;
+        $contact->declined_at = null;
         $contact->verification_token = null;
         $contact->verification_token_expires_at = null;
         $contact->save();
 
-        return response()->json(['message' => 'Contacto confirmado correctamente.', 'contact_name' => $contact->name]);
+        return response()->json(['message' => 'Contacto confirmado correctamente.', 'contact_name' => $contact->name, 'status' => $contact->status]);
+    }
+
+    /** El contacto rechaza ser contacto de emergencia (botón "No acepto" del correo). */
+    public function decline(Request $request, string $id): JsonResponse
+    {
+        $validated = $request->validate(['token' => ['required', 'string']]);
+
+        $contact = Contact::find($id);
+        if (! $contact) {
+            return response()->json(['message' => 'Contacto no encontrado.'], 404);
+        }
+        if ($contact->verified) {
+            return response()->json(['message' => 'Ya habías aceptado ser contacto de emergencia.', 'status' => $contact->status], 422);
+        }
+        if ($error = $this->invitationError($contact, $validated['token'])) {
+            return $error;
+        }
+
+        $contact->declined_at = now();
+        $contact->verification_token = null;
+        $contact->verification_token_expires_at = null;
+        $contact->save();
+
+        return response()->json(['message' => 'Listo, no recibirás alertas de esta persona.', 'contact_name' => $contact->name, 'status' => $contact->status]);
+    }
+
+    /** Error si la invitación ya no se puede responder (rechazada, vencida o enlace inválido). */
+    private function invitationError(Contact $contact, string $token): ?JsonResponse
+    {
+        if ($contact->declined_at) {
+            return response()->json(['message' => 'Ya rechazaste esta invitación.', 'status' => Contact::STATUS_REJECTED], 422);
+        }
+        if (! $contact->verification_token || ! $contact->verification_token_expires_at || $contact->verification_token_expires_at->isPast()) {
+            return response()->json([
+                'message' => 'El tiempo para responder ('.Contact::RESPONSE_MINUTES.' minutos) terminó y la invitación quedó rechazada. Pide que te la reenvíen.',
+                'status' => Contact::STATUS_REJECTED,
+            ], 422);
+        }
+        if (! Hash::check($token, $contact->verification_token)) {
+            return response()->json(['message' => 'Enlace de confirmación inválido.'], 422);
+        }
+
+        return null;
     }
 
     private function issueVerification(Contact $contact, string $ownerName, Request $request): void
     {
         $token = Str::random(40);
         $contact->verification_token = Hash::make($token);
-        $contact->verification_token_expires_at = now()->addDays(self::VERIFICATION_TTL_DAYS);
+        $contact->verification_token_expires_at = now()->addMinutes(Contact::RESPONSE_MINUTES);
         $contact->verified = false;
+        $contact->declined_at = null;
         $contact->save();
 
         // El enlace apunta a la página web desde la que se guardó el contacto (o a FRONTEND_URL).
         $verifyUrl = FrontendUrl::to("verify-contact/{$contact->id}?token={$token}", $request);
+        $declineUrl = $verifyUrl.'&action=decline';
 
         try {
-            Mail::to($contact->email)->send(new ContactVerification($contact->name, $ownerName, $verifyUrl));
+            Mail::to($contact->email)->send(new ContactVerification($contact->name, $ownerName, $verifyUrl, $declineUrl, Contact::RESPONSE_MINUTES));
         } catch (\Exception $e) {
             Log::error('Error sending contact verification email: ' . $e->getMessage());
         }

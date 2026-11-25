@@ -21,6 +21,9 @@
               <p style="font-size:15px; line-height:1.7; color:#94A3B8; margin:0 0 20px;">
                 Esto significa que si {{ $ownerName }} activa una alerta SOS, recibirás un aviso con su ubicación para que puedas ayudar. Confirma que aceptas recibir estas alertas:
               </p>
+              <p style="font-size:14px; line-height:1.6; color:#FBBF24; margin:0 0 20px; padding:12px 16px; background-color:rgba(245,158,11,0.10); border-radius:12px;">
+                ⏱️ Tienes <strong>{{ $responseMinutes }} minutos</strong> para responder. Si no respondes a tiempo, la invitación se marcará como <strong>rechazada</strong>.
+              </p>
             </td>
           </tr>
 
@@ -36,8 +39,13 @@
                   </td>
                 </tr>
               </table>
+              @if ($declineUrl)
+                <p style="font-size:14px; margin:18px 0 0;">
+                  <a href="{{ $declineUrl }}" style="color:#F87171; font-weight:700; text-decoration:underline; font-family: 'Segoe UI', Helvetica, Arial, sans-serif;">❌ No acepto</a>
+                </p>
+              @endif
               <p style="font-size:13px; color:#64748B; margin:20px 0 0;">
-                Si no conoces a {{ $ownerName }} o no quieres recibir estas alertas, simplemente ignora este correo.
+                Si no conoces a {{ $ownerName }} o no quieres recibir estas alertas, toca "No acepto" o ignora este correo.
               </p>
             </td>
           </tr>

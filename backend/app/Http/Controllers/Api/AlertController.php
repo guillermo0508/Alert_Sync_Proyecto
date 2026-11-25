@@ -90,7 +90,9 @@ class AlertController extends Controller
         ]);
 
         $user = $request->user();
-        $contacts = Contact::where('user_id', $user->id)->orderBy('priority')->get();
+        // Quien tocó "No acepto" en el correo no recibe alertas. Los que solo no
+        // respondieron a tiempo siguen recibiéndolas (para no dejar a nadie sin aviso).
+        $contacts = Contact::where('user_id', $user->id)->whereNull('declined_at')->orderBy('priority')->get();
 
         $notified = $contacts->map(fn (Contact $contact) => [
             'id' => (string) $contact->id,

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
 
@@ -19,10 +19,62 @@ const form = ref({
   priority: 1,
 })
 
-onMounted(loadContacts)
+// ── Tiempo real ─────────────────────────────────────────────
+// Mientras haya invitaciones pendientes se consulta cada 5 s (para ver al momento
+// "Confirmado" o "Rechazado"); si no, cada 20 s (cambios hechos desde la app).
+const FAST_MS = 5_000
+const SLOW_MS = 20_000
+const now = ref(Date.now())
+let pollTimer = null
+let clockTimer = null
 
-async function loadContacts() {
-  loading.value = true
+const hasPending = computed(() => contacts.value.some((c) => statusOf(c) === 'pending'))
+
+function schedulePoll() {
+  clearTimeout(pollTimer)
+  pollTimer = setTimeout(async () => {
+    if (!document.hidden && auth.token !== 'demo-token') await loadContacts({ silent: true })
+    schedulePoll()
+  }, hasPending.value ? FAST_MS : SLOW_MS)
+}
+function onVisibility() { if (!document.hidden) loadContacts({ silent: true }) }
+
+onMounted(async () => {
+  await loadContacts()
+  schedulePoll()
+  clockTimer = setInterval(() => { now.value = Date.now() }, 1000)
+  document.addEventListener('visibilitychange', onVisibility)
+})
+onBeforeUnmount(() => {
+  clearTimeout(pollTimer)
+  clearInterval(clockTimer)
+  document.removeEventListener('visibilitychange', onVisibility)
+})
+
+/** confirmed · pending · rejected · no_email (el "pendiente" vencido cuenta como rechazado). */
+function statusOf(contact) {
+  if (contact.verified) return 'confirmed'
+  if (!contact.email) return 'no_email'
+  if (contact.status === 'rejected') return 'rejected'
+  const expires = contact.verification_token_expires_at ? Date.parse(contact.verification_token_expires_at) : 0
+  return expires > now.value ? 'pending' : 'rejected'
+}
+
+function timeLeft(contact) {
+  const ms = Date.parse(contact.verification_token_expires_at) - now.value
+  if (!(ms > 0)) return ''
+  const m = Math.floor(ms / 60000), s = Math.floor((ms % 60000) / 1000)
+  return `${m}:${String(s).padStart(2, '0')}`
+}
+
+const STATUS_BADGE = {
+  confirmed: ['badge-green', '✅ Confirmado'],
+  pending: ['badge-orange', '⏳ Pendiente'],
+  rejected: ['badge-red', '❌ Rechazado'],
+}
+
+async function loadContacts({ silent = false } = {}) {
+  if (!silent) loading.value = true
   if (auth.token === 'demo-token') {
     contacts.value = [
       { id: '1', name: 'Mamá', phone: '+52 33 1111 2222', notify_sms: true, notify_call: true },
@@ -35,7 +87,7 @@ async function loadContacts() {
     const { data } = await api.get('/contacts')
     contacts.value = data.contacts
   } catch {
-    error.value = 'No se pudieron cargar los contactos.'
+    if (!silent) error.value = 'No se pudieron cargar los contactos.'
   } finally {
     loading.value = false
   }
@@ -49,6 +101,11 @@ async function saveContact() {
     } else {
       const { data } = await api.post('/contacts', form.value)
       contacts.value.push(data.contact)
+      if (data.contact?.email) {
+        toast.value = `Le enviamos un correo a ${data.contact.email}. Tiene 15 minutos para aceptar.`
+        setTimeout(() => { toast.value = '' }, 6000)
+      }
+      schedulePoll()
     }
     form.value = { name: '', phone: '', email: '', relationship: '', notify_sms: true, notify_call: false, notify_email: false, priority: 1 }
     showForm.value = false
@@ -77,6 +134,8 @@ async function resendVerification(contact) {
     const { data } = await api.post(`/contacts/${contact.id}/resend-verification`)
     toast.value = data.message
     setTimeout(() => { toast.value = '' }, 4000)
+    await loadContacts({ silent: true })
+    schedulePoll()
   } catch (e) {
     error.value = e.response?.data?.message || 'No se pudo reenviar la confirmación.'
   } finally {
@@ -139,17 +198,23 @@ function channels(contact) {
           <p class="contact-detail">✉️ {{ contact.email || 'Sin email' }}</p>
           <div class="badge-row">
             <p class="badge badge-cyan">{{ channels(contact) }}</p>
-            <p v-if="contact.email" class="badge" :class="contact.verified ? 'badge-green' : 'badge-orange'">
-              {{ contact.verified ? '✅ Confirmado' : '⏳ Pendiente' }}
+            <p v-if="STATUS_BADGE[statusOf(contact)]" class="badge" :class="STATUS_BADGE[statusOf(contact)][0]">
+              {{ STATUS_BADGE[statusOf(contact)][1] }}
             </p>
           </div>
+          <p v-if="statusOf(contact) === 'pending'" class="status-note text-sm" aria-live="polite">
+            Esperando respuesta · se rechaza en {{ timeLeft(contact) }}
+          </p>
+          <p v-else-if="statusOf(contact) === 'rejected'" class="status-note text-sm">
+            {{ contact.declined_at ? 'Rechazó la invitación.' : 'No respondió en 15 minutos.' }} No aparece en tu reloj.
+          </p>
           <button
-            v-if="contact.email && !contact.verified"
+            v-if="['pending', 'rejected'].includes(statusOf(contact))"
             class="link-btn mt-2"
             :disabled="resendingId === contact.id"
             @click="resendVerification(contact)"
           >
-            {{ resendingId === contact.id ? 'Enviando...' : 'Reenviar confirmación' }}
+            {{ resendingId === contact.id ? 'Enviando...' : statusOf(contact) === 'rejected' ? 'Volver a invitar' : 'Reenviar confirmación' }}
           </button>
           <button class="btn btn-secondary btn-sm mt-4" @click="removeContact(contact.id)">Eliminar</button>
         </div>
@@ -211,4 +276,5 @@ function channels(contact) {
   background: var(--glass-bg); border-radius: var(--radius-xl);
 }
 @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
+.status-note { color: var(--text-secondary); margin-top: var(--space-2); }
 </style>
