@@ -22,11 +22,11 @@ class AlertCancellationTest extends TestCase
         Contact::create([
             'user_id' => $user->id, 'name' => 'Mamá', 'phone' => '+523300000000',
             'email' => 'mama@example.com', 'relationship' => 'Mamá',
-            'notify_sms' => true, 'notify_email' => true, 'priority' => 1,
+            'notify_sms' => true, 'notify_email' => true, 'priority' => 1, 'verified' => true,
         ]);
         Contact::create([
             'user_id' => $user->id, 'name' => 'Solo SMS', 'phone' => '+523311111111',
-            'notify_sms' => true, 'notify_email' => false, 'priority' => 2,
+            'notify_sms' => true, 'notify_email' => false, 'priority' => 2, 'verified' => true,
         ]);
         return $user;
     }

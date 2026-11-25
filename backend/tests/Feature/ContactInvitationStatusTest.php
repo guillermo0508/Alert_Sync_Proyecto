@@ -99,16 +99,30 @@ class ContactInvitationStatusTest extends TestCase
         $this->getJson('/api/contacts')->assertJsonPath('contacts.0.status', 'pending');
     }
 
-    public function test_contacts_who_declined_do_not_receive_sos(): void
+    public function test_sos_only_reaches_confirmed_contacts(): void
     {
         [$declined, $token] = $this->invite();
         $this->postJson("/api/contacts/{$declined->id}/decline", ['token' => $token])->assertOk();
         $user = $declined->user;
-        $ok = Contact::create(['user_id' => $user->id, 'name' => 'Papá', 'email' => 'papa@example.com', 'verified' => true]);
+        $pending = Contact::create(['user_id' => $user->id, 'name' => 'Tía', 'email' => 'tia@example.com',
+            'verification_token_expires_at' => now()->addMinutes(10)]);
+        $timedOut = Contact::create(['user_id' => $user->id, 'name' => 'Tío', 'email' => 'tio@example.com',
+            'verification_token_expires_at' => now()->subMinute()]);
+        $confirmed = Contact::create(['user_id' => $user->id, 'name' => 'Papá', 'email' => 'papa@example.com', 'verified' => true]);
 
-        $notified = $this->postJson('/api/alerts/sos', ['source' => 'web'])->assertSuccessful()
-            ->json('alert.contacts_notified');
+        foreach (['mobile', 'watch', 'web'] as $source) {
+            $notified = $this->postJson('/api/alerts/sos', ['source' => $source])->assertSuccessful()
+                ->json('alert.contacts_notified');
+            $this->assertSame([(string) $confirmed->id], array_column($notified, 'id'), "SOS desde $source");
+        }
+    }
 
-        $this->assertSame([(string) $ok->id], array_column($notified, 'id'));
+    public function test_sos_without_confirmed_contacts_says_nobody_was_notified(): void
+    {
+        $this->invite(); // contacto pendiente
+
+        $this->postJson('/api/alerts/sos', ['source' => 'watch'])->assertSuccessful()
+            ->assertJsonPath('notified_count', 0)
+            ->assertJsonPath('message', 'Alerta registrada, pero no tienes contactos confirmados: nadie recibió el aviso.');
     }
 }

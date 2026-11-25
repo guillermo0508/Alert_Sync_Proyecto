@@ -33,7 +33,7 @@ class MedicalAndPaymentAccessTest extends TestCase
         Mail::fake();
         $user = User::factory()->create(['blood_type' => 'AB-', 'allergies' => 'Nueces']);
         Contact::create(['user_id' => $user->id, 'name' => 'Mamá', 'email' => 'mama@example.com',
-                         'notify_email' => true, 'priority' => 1]);
+                         'notify_email' => true, 'priority' => 1, 'verified' => true]);
         Sanctum::actingAs($user);
 
         $this->postJson('/api/alerts/sos', ['source' => 'mobile'])->assertCreated();

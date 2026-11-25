@@ -90,9 +90,10 @@ class AlertController extends Controller
         ]);
 
         $user = $request->user();
-        // Quien tocó "No acepto" en el correo no recibe alertas. Los que solo no
-        // respondieron a tiempo siguen recibiéndolas (para no dejar a nadie sin aviso).
-        $contacts = Contact::where('user_id', $user->id)->whereNull('declined_at')->orderBy('priority')->get();
+        // Solo reciben la alerta los contactos que aceptaron la invitación por correo
+        // (los pendientes y rechazados no), sin importar si el SOS sale del celular,
+        // del reloj o de la web.
+        $contacts = Contact::where('user_id', $user->id)->where('verified', true)->orderBy('priority')->get();
 
         $notified = $contacts->map(fn (Contact $contact) => [
             'id' => (string) $contact->id,
@@ -129,8 +130,14 @@ class AlertController extends Controller
             $this->sendSosEmails($alert, $notified, $ownerName, $ownerPhone, $medical);
         })->afterResponse();
 
+        $count = $contacts->count();
+
         return response()->json([
-            'message' => 'Alerta SOS enviada correctamente.',
+            // El reloj y el celular muestran este texto tal cual.
+            'message' => $count === 0
+                ? 'Alerta registrada, pero no tienes contactos confirmados: nadie recibió el aviso.'
+                : "Alerta SOS enviada a {$count} contacto(s) confirmado(s).",
+            'notified_count' => $count,
             'alert' => $alert,
             'contacts_count' => count($notified),
             'emails_count' => $emailCount,
