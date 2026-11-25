@@ -4,6 +4,8 @@ import { useAuthStore } from '@/stores/auth'
 import LogoBrand from '@/components/LogoBrand.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import DeviceLinkModal from '@/components/DeviceLinkModal.vue'
+import MobileTopBar from '@/components/MobileTopBar.vue'
+import { useMobileMenu } from '@/composables/useMobileMenu'
 import { useSessionHeartbeat } from '@/composables/useSessionHeartbeat'
 
 import { computed, ref, onMounted, onUnmounted } from 'vue'
@@ -11,6 +13,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const menu = useMobileMenu()
 
 const { start: startHeartbeat, stop: stopHeartbeat } = useSessionHeartbeat()
 onMounted(startHeartbeat)
@@ -64,7 +67,8 @@ async function logout() {
 
 <template>
   <div class="dashboard-layout">
-    <aside class="sidebar">
+    <div v-if="menu.open.value" class="sidebar-backdrop" @click="menu.close" />
+    <aside id="app-sidebar" class="sidebar" :class="{ open: menu.open.value }">
       <div class="sidebar-header">
         <RouterLink to="/" class="sidebar-brand">
           <LogoBrand size="xl" />
@@ -150,6 +154,7 @@ async function logout() {
     </aside>
 
     <main class="main-content">
+      <MobileTopBar :open="menu.open.value" home="/dashboard" title="ALERTSYNC" @toggle="menu.toggle" />
       <RouterView />
     </main>
 
@@ -229,8 +234,20 @@ async function logout() {
 .user-name { font-size: 0.85rem; font-weight: 600; }
 .user-role { font-size: 0.75rem; color: var(--text-muted); }
 .main-content { margin-left: 240px; flex: 1; min-width: 0; min-height: 100vh; }
+
+/* ── Celular / tableta: menú deslizable ─────────────────── */
+.sidebar-backdrop { display: none; }
 @media (max-width: 1024px) {
-  .sidebar { transform: translateX(-100%); }
-  .main-content { margin-left: 0; }
+  .sidebar {
+    transform: translateX(-100%); width: min(280px, 85vw);
+    transition: transform 0.25s ease; box-shadow: 0 0 40px rgba(0,0,0,0.4);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-backdrop {
+    display: block; position: fixed; inset: 0; z-index: 49;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
+  }
+  .main-content { margin-left: 0; padding: 0; }
 }
+@media (prefers-reduced-motion: reduce) { .sidebar { transition: none; } }
 </style>

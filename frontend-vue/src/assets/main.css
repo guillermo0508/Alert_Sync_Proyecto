@@ -699,7 +699,6 @@ input, textarea, select { font-family: inherit; }
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .grid-4 { grid-template-columns: 1fr; }
   .container { padding: 0 var(--space-4); }
-  .main-content { padding: var(--space-4); }
   .navbar-nav { display: none; }
   .text-6xl { font-size: 2.5rem; }
   .text-5xl { font-size: 2rem; }
@@ -752,3 +751,44 @@ input, textarea, select { font-family: inherit; }
 
 /* Focus visible */
 :focus-visible { outline: 2px solid var(--brand-lime); outline-offset: 3px; }
+
+
+/* ── Celular: vistas del panel ───────────────────────────────
+   Las vistas usan .topbar / .page-content con estilos propios; en pantallas
+   angostas se ajustan aquí para todas a la vez. */
+@media (max-width: 1024px) {
+  .main-content .topbar {
+    position: static !important;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5) !important;
+  }
+  .main-content .page-content { padding: var(--space-5) !important; }
+}
+
+@media (max-width: 600px) {
+  .main-content .topbar { padding: var(--space-4) !important; }
+  .main-content .topbar h1 { font-size: 1.2rem !important; line-height: 1.25; }
+  /* La acción del encabezado (botón o grupo de botones) baja a su propia fila, a lo ancho. */
+  .main-content .topbar > :last-child:not(:first-child) { flex: 1 1 100%; justify-content: center; }
+  .main-content .topbar > :last-child:not(:first-child) > .btn { flex: 1 1 auto; justify-content: center; }
+  .main-content .page-content { padding: var(--space-4) !important; }
+  .main-content .card { padding: var(--space-4); }
+
+  /* Tablas del panel de administración: se desplazan de lado en vez de romper la página */
+  .data-table { min-width: 640px; }
+  .main-content table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .main-content .table-wrapper table { display: table; }
+
+  /* Formularios: campos a lo ancho y texto de 16px (evita el zoom automático de iPhone) */
+  input, select, textarea { font-size: 16px !important; }
+  .modal-box, .checkout-modal, .device-modal { width: calc(100vw - 32px) !important; max-width: calc(100vw - 32px) !important; max-height: calc(100dvh - 32px); overflow-y: auto; }
+}
+
+/* ── Celular: barra de las páginas públicas (inicio, términos, privacidad) ── */
+@media (max-width: 520px) {
+  .navbar { padding: var(--space-3) var(--space-4); gap: var(--space-2); }
+  .navbar .brand-logo { width: 44px !important; height: 44px !important; }
+  .navbar .btn-sm { padding: var(--space-2) var(--space-3); font-size: 0.75rem; white-space: nowrap; }
+  .navbar > .flex { gap: var(--space-2) !important; }
+}
