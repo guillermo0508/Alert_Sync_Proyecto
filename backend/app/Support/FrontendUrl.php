@@ -31,8 +31,15 @@ class FrontendUrl
     public static function configured(): string
     {
         $first = trim(explode(',', (string) config('app.frontend_url', 'http://localhost:5173'))[0]);
+        $url = rtrim($first !== '' ? $first : 'http://localhost:5173', '/');
 
-        return rtrim($first !== '' ? $first : 'http://localhost:5173', '/');
+        // Sin FRONTEND_URL, los enlaces de los correos apuntan a localhost: no funcionan para el
+        // contacto y Gmail los trata como sospechosos. Se deja aviso en los Logs de Render.
+        if (app()->isProduction() && self::isLocal($url)) {
+            \Illuminate\Support\Facades\Log::warning('FRONTEND_URL no está configurada: los enlaces de los correos apuntan a ' . $url);
+        }
+
+        return $url;
     }
 
     public static function to(string $path, ?Request $request = null): string

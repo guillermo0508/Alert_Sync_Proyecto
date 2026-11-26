@@ -41,6 +41,10 @@ services:
       # Correo: el plan gratuito de Render bloquea los puertos SMTP (25, 465, 587).
       # Laravel pasa cada correo por HTTPS al servicio mail-relay (Vercel, carpeta mail-relay/),
       # que lo envía por SMTP de Gmail (smtp.gmail.com:587) desde alertsync26@gmail.com.
+      # Dirección pública de la página web: los enlaces de los correos (confirmar contacto, etc.)
+      # apuntan aquí. Sin ella, desde la app del celular los enlaces quedan en localhost.
+      - key: FRONTEND_URL
+        sync: false   # ej. https://alertsync-frontend.onrender.com
       - key: MAIL_MAILER
         value: relay
       - key: MAIL_RELAY_URL

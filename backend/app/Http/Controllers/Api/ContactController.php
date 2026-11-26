@@ -68,13 +68,17 @@ class ContactController extends Controller
             'verified' => false,
         ]);
 
+        $mailSent = true;
         if ($contact->email) {
-            $this->issueVerification($contact, $user->name, $request);
+            $mailSent = $this->issueVerification($contact, $user->name, $request);
         }
 
         return response()->json([
-            'message' => 'Contacto agregado correctamente.',
+            'message' => $mailSent
+                ? 'Contacto agregado correctamente.'
+                : 'Contacto agregado, pero no se pudo enviar el correo de confirmación. Usa "Reenviar correo" en unos minutos.',
             'contact' => $contact,
+            'mail_sent' => $mailSent,
         ], 201);
     }
 
@@ -104,9 +108,10 @@ class ContactController extends Controller
 
         $contact->update($validated);
 
+        $mailSent = true;
         if ($emailChanged) {
             if ($contact->email) {
-                $this->issueVerification($contact->fresh(), $request->user()->name, $request);
+                $mailSent = $this->issueVerification($contact->fresh(), $request->user()->name, $request);
             } else {
                 $contact->verified = false;
                 $contact->declined_at = null;
@@ -117,8 +122,11 @@ class ContactController extends Controller
         }
 
         return response()->json([
-            'message' => 'Contacto actualizado correctamente.',
+            'message' => $mailSent
+                ? 'Contacto actualizado correctamente.'
+                : 'Contacto actualizado, pero no se pudo enviar el correo de confirmación. Usa "Reenviar correo" en unos minutos.',
             'contact' => $contact->fresh(),
+            'mail_sent' => $mailSent,
         ]);
     }
 
@@ -150,9 +158,17 @@ class ContactController extends Controller
             }
         }
 
-        $this->issueVerification($contact, $request->user()->name, $request);
+        if (! $this->issueVerification($contact, $request->user()->name, $request)) {
+            return response()->json([
+                'message' => 'No se pudo enviar el correo de confirmación. Intenta de nuevo en unos minutos.',
+                'mail_sent' => false,
+            ], 502);
+        }
 
-        return response()->json(['message' => "Se reenvió el correo de confirmación a {$contact->email}."]);
+        return response()->json([
+            'message' => "Se reenvió el correo de confirmación a {$contact->email}. Si no lo ves, revisa Spam o Promociones.",
+            'mail_sent' => true,
+        ]);
     }
 
     public function verify(Request $request, string $id): JsonResponse
@@ -227,7 +243,8 @@ class ContactController extends Controller
         return null;
     }
 
-    private function issueVerification(Contact $contact, string $ownerName, Request $request): void
+    /** Genera una invitación nueva y envía el correo. Devuelve false si el correo no se pudo enviar. */
+    private function issueVerification(Contact $contact, string $ownerName, Request $request): bool
     {
         $token = Str::random(40);
         $contact->verification_token = Hash::make($token);
@@ -242,8 +259,12 @@ class ContactController extends Controller
 
         try {
             Mail::to($contact->email)->send(new ContactVerification($contact->name, $ownerName, $verifyUrl, $declineUrl, Contact::RESPONSE_MINUTES));
-        } catch (\Exception $e) {
-            Log::error('Error sending contact verification email: ' . $e->getMessage());
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error("Error enviando correo de confirmación al contacto {$contact->id} ({$contact->email}): " . $e->getMessage());
+
+            return false;
         }
     }
 
