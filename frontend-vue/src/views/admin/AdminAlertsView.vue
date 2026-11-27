@@ -60,7 +60,6 @@ function formatDate(value) {
         <select v-model="sourceFilter" @change="loadAlerts" class="form-input">
           <option value="">Todas las fuentes</option>
           <option value="watch">Smartwatch</option>
-          <option value="alexa">Alexa</option>
           <option value="dashboard">Dashboard</option>
           <option value="dashboard-premium">Dashboard Premium</option>
           <option value="web">Web</option>

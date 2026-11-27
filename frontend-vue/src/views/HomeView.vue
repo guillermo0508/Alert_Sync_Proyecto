@@ -10,10 +10,10 @@ const paidPlans = ref([])
 const content = ref({
   hero_badge: 'Sistema activo y listo',
   hero_title: 'Tu seguridad, siempre conectada',
-  hero_subtitle: 'ALERTSYNC vincula tu smartwatch y tu Alexa para enviar alertas SOS a tus contactos de confianza en segundos. Un toque. Una voz. Protección total.',
+  hero_subtitle: 'ALERTSYNC conecta tu celular y tu smartwatch para enviar alertas SOS con tu ubicación a tus contactos de confianza en segundos y vigilar tus signos vitales en tiempo real.',
   features: [
     { icon: '⌚', title: 'Integración con Smartwatch', text: 'Activa el botón SOS con un solo toque desde tu reloj inteligente vinculado.' },
-    { icon: '🗣️', title: 'Control por Voz con Alexa', text: 'Di "Alexa, pedir ayuda" y el sistema enviará alertas a tus contactos de emergencia.' },
+    { icon: '❤️', title: 'Signos Vitales en Tiempo Real', text: 'Tu reloj envía tu pulso y otros signos vitales cada 5 segundos y, con Premium, avisa a tus contactos si tu pulso es anormal.' },
     { icon: '👥', title: 'Contactos de Emergencia', text: 'Gestiona contactos de confianza con notificaciones por SMS, correo o llamada.' },
   ],
   faqs: [
@@ -109,8 +109,8 @@ onMounted(async () => {
       <div class="steps">
         <div class="step"><div class="step-number">1</div><h3>Regístrate</h3><p>Crea tu cuenta en minutos.</p></div>
         <div class="step"><div class="step-number">2</div><h3>Agrega contactos</h3><p>Configura tus contactos de emergencia.</p></div>
-        <div class="step"><div class="step-number">3</div><h3>Vincula dispositivos</h3><p>Conecta smartwatch y Alexa.</p></div>
-        <div class="step"><div class="step-number">4</div><h3>¡Estás protegido!</h3><p>Un toque o voz activa la alerta SOS.</p></div>
+        <div class="step"><div class="step-number">3</div><h3>Vincula dispositivos</h3><p>Conecta tu smartwatch.</p></div>
+        <div class="step"><div class="step-number">4</div><h3>¡Estás protegido!</h3><p>Un toque activa la alerta SOS.</p></div>
       </div>
     </div>
   </section>
@@ -188,7 +188,7 @@ onMounted(async () => {
     <div class="container footer-grid">
       <div class="footer-brand">
         <LogoBrand size="lg" />
-        <p>Sistema de seguridad personal que vincula smartwatch y Alexa para enviar alertas SOS a tus contactos de confianza.</p>
+        <p>Sistema de seguridad personal que vincula tu celular y tu smartwatch para enviar alertas SOS a tus contactos de confianza.</p>
       </div>
       <div class="footer-col">
         <h4>Producto</h4>

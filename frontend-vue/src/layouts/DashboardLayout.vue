@@ -44,11 +44,10 @@ const navItems = computed(() => {
   return items
 })
 
-const activeDeviceModal = ref(null) // null | 'watch' | 'alexa'
+const activeDeviceModal = ref(null) // null | 'watch'
 
 const DEVICE_META = {
   watch: { label: 'Smartwatch', icon: '⌚' },
-  alexa: { label: 'Alexa', icon: '🔊' },
 }
 
 const activeDeviceMeta = computed(() => activeDeviceModal.value ? DEVICE_META[activeDeviceModal.value] : null)
@@ -100,14 +99,6 @@ async function logout() {
                 <span class="nav-icon">⌚</span> Smartwatch
                 <span style="margin-left: auto" :class="{ 'dot-off': !auth.user?.devices?.watch }">
                   {{ auth.user?.devices?.watch ? '🟢' : '⚪' }}
-                </span>
-              </button>
-            </li>
-            <li v-if="isPremium">
-              <button class="sidebar-link device-link" @click="openDeviceModal('alexa')">
-                <span class="nav-icon">🔊</span> Alexa
-                <span style="margin-left: auto" :class="{ 'dot-off': !auth.user?.devices?.alexa }">
-                  {{ auth.user?.devices?.alexa ? '🟢' : '⚪' }}
                 </span>
               </button>
             </li>

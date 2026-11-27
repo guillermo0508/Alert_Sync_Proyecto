@@ -25,10 +25,10 @@ class SiteContent extends Model
         return [
             'hero_badge' => 'Sistema activo y listo',
             'hero_title' => 'Tu seguridad, siempre conectada',
-            'hero_subtitle' => 'ALERTSYNC vincula tu smartwatch y tu Alexa para enviar alertas SOS a tus contactos de confianza en segundos. Un toque. Una voz. Protección total.',
+            'hero_subtitle' => 'ALERTSYNC conecta tu celular y tu smartwatch para enviar alertas SOS con tu ubicación a tus contactos de confianza en segundos y vigilar tus signos vitales en tiempo real.',
             'features' => [
                 ['icon' => '⌚', 'title' => 'Integración con Smartwatch', 'text' => 'Activa el botón SOS con un solo toque desde tu reloj inteligente vinculado.'],
-                ['icon' => '🗣️', 'title' => 'Control por Voz con Alexa', 'text' => 'Di "Alexa, pedir ayuda" y el sistema enviará alertas a tus contactos de emergencia.'],
+                ['icon' => '❤️', 'title' => 'Signos Vitales en Tiempo Real', 'text' => 'Tu reloj envía tu pulso y otros signos vitales cada 5 segundos y, con Premium, avisa a tus contactos si tu pulso es anormal.'],
                 ['icon' => '👥', 'title' => 'Contactos de Emergencia', 'text' => 'Gestiona contactos de confianza con notificaciones por SMS, correo o llamada.'],
             ],
             'faqs' => [

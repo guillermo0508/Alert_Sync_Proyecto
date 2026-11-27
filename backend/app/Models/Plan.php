@@ -26,8 +26,8 @@ class Plan extends Model
                 'price_amount' => 100,
                 'features' => [
                     'Hasta 5 contactos de emergencia',
-                    'Soporte para Smart Watch',
-                    'Alertas instantáneas',
+                    'Alertas SOS desde el celular y el Smart Watch',
+                    'Signos vitales básicos en tiempo real (pulso, pasos y batería)',
                 ],
                 'max_contacts' => 5,
             ],
@@ -37,9 +37,9 @@ class Plan extends Model
                 'price_amount' => 200,
                 'features' => [
                     'Hasta 15 contactos de emergencia',
-                    'Soporte para Smart Watch y Alexa',
-                    'Dashboard exclusivo Premium',
-                    'Soporte prioritario',
+                    'Todos los signos vitales en tiempo real',
+                    'Alerta automática por pulso anormal',
+                    'Dashboard exclusivo Premium y soporte prioritario',
                 ],
                 'max_contacts' => 15,
             ],

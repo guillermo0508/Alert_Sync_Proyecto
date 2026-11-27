@@ -25,7 +25,7 @@ import { RouterLink } from 'vue-router'
         <div class="lock-icon">🔒</div>
         <h2>Modo Demo Activo</h2>
         <p>Estás viendo una vista previa interactiva del menú de Alert Sync.</p>
-        <p class="desc-secondary">Para comenzar a agregar tus contactos de emergencia, configurar tu Smart Watch o Alexa y activar el protocolo de alerta SOS, necesitas contratar un plan de suscripción.</p>
+        <p class="desc-secondary">Para comenzar a agregar tus contactos de emergencia, configurar tu Smart Watch y activar el protocolo de alerta SOS, necesitas contratar un plan de suscripción.</p>
         
         <RouterLink to="/dashboard/plans" class="btn btn-primary mt-6">
           ⭐ Ver Planes de Suscripción

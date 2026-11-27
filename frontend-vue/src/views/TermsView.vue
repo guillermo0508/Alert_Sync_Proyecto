@@ -27,7 +27,7 @@ import ThemeToggle from '@/components/ThemeToggle.vue'
       <p>Al crear una cuenta o usar ALERTSYNC ("el Servicio"), aceptas estos Términos y Condiciones. Si no estás de acuerdo, no debes usar el Servicio.</p>
 
       <h2>2. Descripción del servicio</h2>
-      <p>ALERTSYNC es un sistema de seguridad personal que vincula smartwatch, Alexa y una app web para enviar alertas SOS a contactos de emergencia configurados por el usuario, incluyendo ubicación cuando esté disponible.</p>
+      <p>ALERTSYNC es un sistema de seguridad personal que vincula smartwatch y una app web para enviar alertas SOS a contactos de emergencia configurados por el usuario, incluyendo ubicación cuando esté disponible.</p>
 
       <h2>3. Cuenta de usuario</h2>
       <p>Eres responsable de mantener la confidencialidad de tu contraseña y de toda actividad realizada desde tu cuenta. Debes proporcionar información veraz al registrarte.</p>
@@ -36,7 +36,7 @@ import ThemeToggle from '@/components/ThemeToggle.vue'
       <ul>
         <li><strong>Demo:</strong> gratuito, sin acceso a activación real de alertas ni dispositivos.</li>
         <li><strong>Básico:</strong> $100 MXN/mes — hasta 5 contactos de emergencia, soporte Smart Watch.</li>
-        <li><strong>Premium:</strong> $200 MXN/mes — hasta 15 contactos de emergencia, soporte Smart Watch y Alexa.</li>
+        <li><strong>Premium:</strong> $200 MXN/mes — hasta 15 contactos de emergencia, todos los signos vitales en tiempo real y alerta automática a tus contactos por pulso anormal.</li>
       </ul>
       <p>Los precios están en pesos mexicanos (MXN) e incluyen renovación mensual automática salvo cancelación. Puedes cambiar o cancelar tu plan en cualquier momento desde tu panel; los cambios aplican en el siguiente ciclo de facturación salvo que se indique lo contrario.</p>
 

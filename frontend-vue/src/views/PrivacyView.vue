@@ -33,7 +33,7 @@ import ThemeToggle from '@/components/ThemeToggle.vue'
         <li>Datos de ubicación (GPS) al momento de activar una alerta SOS.</li>
         <li>Ubicación aproximada de tu celular mientras tienes abierta la app AlertSync, solo si autorizaste el acceso a la ubicación.</li>
         <li>Signos vitales que mide tu Smart Watch (ritmo cardíaco, oxígeno en sangre, pasos y temperatura de la piel) y el nivel de batería de tus dispositivos.</li>
-        <li>Datos de dispositivos vinculados (Smart Watch, Alexa).</li>
+        <li>Datos del Smart Watch vinculado y sus signos vitales (ritmo cardíaco, pasos y batería; en Premium también oxígeno, ritmo en reposo, HRV, respiración, temperatura, calorías y distancia).</li>
         <li>Últimos 4 dígitos de tarjeta y nombre del titular, para procesar pagos de suscripción. No almacenamos el número completo de tarjeta ni el CVV.</li>
       </ul>
 

@@ -71,7 +71,6 @@ function restoreAll() {
 
 const sourceLabels = {
   watch: '⌚ Smartwatch',
-  alexa: '🔊 Alexa',
   dashboard: '🌐 Dashboard',
   'dashboard-premium': '🌐 Dashboard Premium',
   mobile: '📱 App móvil',

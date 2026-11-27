@@ -354,9 +354,6 @@ async function deleteDetailContact(contact) {
               <label class="check-row">
                 <input type="checkbox" v-model="form.devices.watch" /> ⌚ Smartwatch vinculado
               </label>
-              <label class="check-row">
-                <input type="checkbox" v-model="form.devices.alexa" /> 🔊 Alexa vinculada
-              </label>
             </div>
           </div>
           <button type="submit" class="btn btn-primary w-full" :disabled="saving">
@@ -401,8 +398,7 @@ async function deleteDetailContact(contact) {
           <div class="detail-section">
             <h4>Dispositivos</h4>
             <p class="text-secondary">
-              ⌚ Smartwatch: {{ detailUser?.devices?.watch ? `Vinculado (${detailUser?.device_names?.watch || 's/n'})` : 'No vinculado' }}<br>
-              🔊 Alexa: {{ detailUser?.devices?.alexa ? `Vinculada (${detailUser?.device_names?.alexa || 's/n'})` : 'No vinculada' }}
+              ⌚ Smartwatch: {{ detailUser?.devices?.watch ? `Vinculado (${detailUser?.device_names?.watch || 's/n'})` : 'No vinculado' }}
             </p>
           </div>
 

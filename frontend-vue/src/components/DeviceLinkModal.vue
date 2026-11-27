@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
 
 const props = defineProps({
-  device: { type: String, required: true }, // 'watch' | 'alexa'
+  device: { type: String, required: true }, // 'watch'
   label: { type: String, required: true },
   icon: { type: String, required: true },
   linked: { type: Boolean, default: false },
@@ -18,7 +18,6 @@ const auth = useAuthStore()
 
 const SIMULATED_DEVICES = {
   watch: ['ALERTSYNC Watch Pro', 'Apple Watch Series 9', 'Galaxy Watch 6'],
-  alexa: ['Echo Dot (4ª Gen)', 'Echo Show 5', 'Echo Auto'],
 }
 
 // idle | scanning | found | linking | success | error

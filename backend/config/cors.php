@@ -11,6 +11,8 @@ return [
     'allowed_origins_patterns' => [
         '#^http://localhost:\d+$#',
         '#^https://.*\.onrender\.com$#',
+        // Página web desplegada en Vercel (producción y vistas previas del proyecto alertsync-frontend).
+        '#^https://alertsync[a-z0-9-]*\.vercel\.app$#',
     ],
 
     'allowed_headers' => ['*'],

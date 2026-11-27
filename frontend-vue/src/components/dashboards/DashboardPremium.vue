@@ -98,7 +98,7 @@ function formatDate(value) {
         <div class="sos-card glass-panel">
           <div class="sos-glow"></div>
           <h2>Protocolo de Emergencia</h2>
-          <p>Activa una alerta inmediata a todos tus dispositivos (Smart Watch y Alexa) y contactos.</p>
+          <p>Activa una alerta inmediata desde tu Smart Watch o tu celular a todos tus contactos confirmados.</p>
           <div class="sos-status-badge">
             <span class="sos-status-icon">🛡️</span>
             <span class="sos-status-text">PROTOCOLO LISTO</span>
