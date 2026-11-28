@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
@@ -10,6 +10,34 @@ const alerts = ref([])
 const location = ref(null)
 const locationError = ref('')
 const locatingUser = ref(false)
+// Signos vitales en vivo (mismos 4 datos que en la app del iPhone y del reloj Premium).
+const live = ref(null)
+let liveTimer = null
+
+async function loadLive() {
+  try {
+    const { data } = await api.get('/readings/latest')
+    live.value = data
+  } catch {
+    // sin datos todavía
+  }
+}
+
+const vitals = computed(() => {
+  const v = live.value?.vitals || {}
+  const watch = live.value?.devices?.watch || {}
+  return [
+    { key: 'hr', icon: '❤️', label: 'Pulso', value: v.heart_rate?.value, unit: 'BPM' },
+    { key: 'spo2', icon: '💧', label: 'Oxígeno SpO₂', value: v.spo2?.value, unit: '%' },
+    { key: 'steps', icon: '🚶', label: 'Pasos hoy', value: v.steps?.value, unit: 'pasos' },
+    { key: 'battery', icon: '🔋', label: 'Batería del reloj', value: watch.battery, unit: '%' },
+  ]
+})
+const watchOnline = computed(() => !!live.value?.devices?.watch?.online)
+const lastVitalsAt = computed(() => {
+  const at = live.value?.vitals?.heart_rate?.recorded_at
+  return at ? new Date(at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : null
+})
 
 const firstName = computed(() => (auth.user?.name || 'Usuario').split(' ')[0])
 const greeting = computed(() => {
@@ -65,7 +93,11 @@ onMounted(async () => {
     console.error('Error fetching dashboard data')
   }
   locateUser()
+  loadLive()
+  liveTimer = setInterval(loadLive, 5000)
 })
+
+onUnmounted(() => clearInterval(liveTimer))
 
 function formatDate(value) {
   if (!value) return 'Ahora'
@@ -79,6 +111,7 @@ function formatDate(value) {
     <header class="premium-header">
       <div class="header-content">
         <div>
+          <div class="crown-badge">👑 PREMIUM</div>
           <h1 class="premium-title">Menú <span>Premium</span></h1>
           <p class="premium-subtitle">{{ greeting }}, {{ firstName }}. Tu red de seguridad inteligente está operando al 100%.</p>
         </div>
@@ -93,6 +126,24 @@ function formatDate(value) {
 
     <!-- Main Content -->
     <div class="premium-content">
+      <!-- Signos vitales en vivo (exclusivo Premium, igual que en el iPhone y el reloj) -->
+      <section class="vitals-panel glass-panel">
+        <div class="vitals-header">
+          <div>
+            <h2>Signos vitales en vivo</h2>
+            <p>{{ watchOnline ? 'Reloj conectado' : 'Esperando datos del reloj' }}<span v-if="lastVitalsAt"> · Actualizado {{ lastVitalsAt }}</span></p>
+          </div>
+          <span class="heart-alert-chip">🛡️ Alerta por pulso anormal activa</span>
+        </div>
+        <div class="vitals-grid">
+          <div v-for="v in vitals" :key="v.key" class="vital-tile">
+            <span class="vital-icon">{{ v.icon }}</span>
+            <span class="vital-label">{{ v.label }}</span>
+            <span class="vital-value">{{ v.value ?? '--' }}<small v-if="v.value != null"> {{ v.unit }}</small></span>
+          </div>
+        </div>
+      </section>
+
       <div class="grid-layout">
         <!-- Emergency Protocol Status -->
         <div class="sos-card glass-panel">
@@ -160,7 +211,7 @@ function formatDate(value) {
           <div>
             <h3>Código de Acceso para Smartwatch</h3>
             <p>
-              Genera tu código de 6 dígitos para iniciar sesión instantáneamente desde la app de tu reloj inteligente Wear OS.
+              Genera tu código de 6 dígitos para iniciar sesión instantáneamente desde la app de tu reloj inteligente.
               Sin contraseñas difíciles en pantallas pequeñas.
             </p>
             <div class="watch-meta-tags">
@@ -228,9 +279,45 @@ function formatDate(value) {
 <style scoped>
 .premium-layout {
   min-height: 100vh;
-  background: radial-gradient(circle at top right, rgba(29,93,110,0.15) 0%, transparent 40%),
-              radial-gradient(circle at bottom left, rgba(159,211,45,0.1) 0%, transparent 40%);
+  --premium-gold: #F5C542;
+  --premium-gold-deep: #D99A1E;
+  background: radial-gradient(circle at top right, rgba(245,197,66,0.14) 0%, transparent 40%),
+              radial-gradient(circle at bottom left, rgba(29,93,110,0.15) 0%, transparent 40%);
 }
+
+.crown-badge {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  padding: 0.3rem 0.9rem;
+  border-radius: 50px;
+  background: linear-gradient(135deg, var(--premium-gold), var(--premium-gold-deep));
+  color: #1A1300;
+  font-weight: 900;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+}
+
+.vitals-panel {
+  margin-bottom: 2rem;
+  border: 1px solid rgba(245,197,66,0.35);
+  background: linear-gradient(135deg, rgba(245,197,66,0.08), rgba(29,93,110,0.12));
+}
+.vitals-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.vitals-header h2 { font-size: 1.4rem; font-weight: 800; }
+.vitals-header p { color: var(--text-secondary); font-size: 0.9rem; }
+.heart-alert-chip {
+  padding: 0.4rem 0.9rem; border-radius: 50px; font-weight: 700; font-size: 0.8rem;
+  background: rgba(245,197,66,0.15); color: var(--premium-gold); border: 1px solid rgba(245,197,66,0.35);
+}
+.vitals-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.vital-tile {
+  display: flex; flex-direction: column; gap: 0.25rem; padding: 1.25rem;
+  border-radius: var(--radius-lg); background: rgba(0,0,0,0.2); border: 1px solid rgba(245,197,66,0.15);
+}
+.vital-icon { font-size: 1.5rem; }
+.vital-label { color: var(--text-secondary); font-size: 0.85rem; }
+.vital-value { font-size: 2rem; font-weight: 900; }
+.vital-value small { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); }
 
 .premium-header {
   padding: 3rem 3rem 1.5rem;
@@ -251,7 +338,7 @@ function formatDate(value) {
 }
 
 .premium-title span {
-  background: linear-gradient(135deg, var(--brand-lime), var(--brand-teal-light));
+  background: linear-gradient(135deg, var(--premium-gold), var(--premium-gold-deep));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -265,11 +352,11 @@ function formatDate(value) {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: rgba(159,211,45,0.1);
-  border: 1px solid rgba(159,211,45,0.2);
+  background: rgba(245,197,66,0.1);
+  border: 1px solid rgba(245,197,66,0.3);
   padding: 0.5rem 1rem;
   border-radius: 50px;
-  color: var(--brand-lime);
+  color: var(--premium-gold);
   font-weight: 600;
   font-size: 0.9rem;
 }
@@ -277,16 +364,16 @@ function formatDate(value) {
 .pulse-dot {
   width: 10px;
   height: 10px;
-  background: var(--brand-lime);
+  background: var(--premium-gold);
   border-radius: 50%;
-  box-shadow: 0 0 10px var(--brand-lime);
+  box-shadow: 0 0 10px var(--premium-gold);
   animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(159,211,45,0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(159,211,45,0); }
-  100% { box-shadow: 0 0 0 0 rgba(159,211,45,0); }
+  0% { box-shadow: 0 0 0 0 rgba(245,197,66,0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(245,197,66,0); }
+  100% { box-shadow: 0 0 0 0 rgba(245,197,66,0); }
 }
 
 .premium-content {
@@ -379,7 +466,7 @@ function formatDate(value) {
 }
 
 .stat-box.accent-teal::before { background: var(--brand-teal-light); }
-.stat-box.accent-lime::before { background: var(--brand-lime); }
+.stat-box.accent-lime::before { background: var(--premium-gold); }
 .stat-box.accent-red::before { background: #FF3B3B; }
 
 .stat-icon {
@@ -430,8 +517,8 @@ function formatDate(value) {
 .history-header h3 { font-size: 1.5rem; font-weight: 800; }
 
 .badge-premium {
-  background: linear-gradient(135deg, var(--brand-lime), var(--brand-teal));
-  color: #000;
+  background: linear-gradient(135deg, var(--premium-gold), var(--premium-gold-deep));
+  color: #1A1300;
   padding: 0.4rem 1rem;
   border-radius: 50px;
   font-weight: 700;
@@ -507,8 +594,8 @@ function formatDate(value) {
   justify-content: space-between;
   gap: 2rem;
   margin-bottom: 2rem;
-  background: linear-gradient(135deg, rgba(159,211,45,0.08) 0%, rgba(29,93,110,0.15) 100%);
-  border: 1px solid rgba(159,211,45,0.25);
+  background: linear-gradient(135deg, rgba(245,197,66,0.08) 0%, rgba(29,93,110,0.15) 100%);
+  border: 1px solid rgba(245,197,66,0.3);
 }
 
 .watch-banner-left {
@@ -581,6 +668,7 @@ function formatDate(value) {
 @media (max-width: 1024px) {
   .watch-banner { flex-direction: column; align-items: flex-start; }
   .grid-layout { grid-template-columns: 1fr; }
+  .vitals-grid { grid-template-columns: repeat(2, 1fr); }
   .premium-header { padding: 2rem; }
   .premium-content { padding: 1.5rem; }
 }
