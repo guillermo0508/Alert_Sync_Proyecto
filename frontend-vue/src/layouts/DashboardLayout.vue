@@ -8,16 +8,35 @@ import MobileTopBar from '@/components/MobileTopBar.vue'
 import { useMobileMenu } from '@/composables/useMobileMenu'
 import { useSessionHeartbeat } from '@/composables/useSessionHeartbeat'
 
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const menu = useMobileMenu()
 
-const { start: startHeartbeat, stop: stopHeartbeat } = useSessionHeartbeat()
+// La revisión de sesión también trae el usuario: si el plan cambió (desde la app, el reloj u otra
+// pestaña), el menú y el dashboard cambian solos (DashboardView elige el panel según el plan).
+const { start: startHeartbeat, stop: stopHeartbeat } = useSessionHeartbeat({
+  onUser: (fresh) => {
+    if (JSON.stringify(fresh) !== JSON.stringify(auth.user)) auth.applyUserUpdate(fresh)
+  },
+})
 onMounted(startHeartbeat)
 onUnmounted(stopHeartbeat)
+
+// Aviso "Ahora tienes el plan …" al detectar el cambio.
+const planNotice = ref('')
+let planNoticeTimer = null
+watch(() => auth.user?.plan, (plan, previous) => {
+  if (!previous || plan === previous) return
+  planNotice.value = plan && plan !== 'Demo' ? `Ahora tienes el plan ${plan}` : 'Tu plan terminó: estás en modo Demo'
+  clearTimeout(planNoticeTimer)
+  planNoticeTimer = setTimeout(() => { planNotice.value = '' }, 4000)
+  // En modo Demo las secciones del plan ya no están disponibles: se vuelve al menú.
+  if (!plan || plan === 'Demo') router.push('/dashboard')
+})
+onUnmounted(() => clearTimeout(planNoticeTimer))
 
 const isDemo = computed(() => auth.user?.plan === 'Demo' || !auth.user?.plan)
 const isPremium = computed(() => auth.user?.plan === 'Premium')
@@ -146,6 +165,11 @@ async function logout() {
 
     <main class="main-content">
       <MobileTopBar :open="menu.open.value" home="/dashboard" title="ALERTSYNC" @toggle="menu.toggle" />
+      <Transition name="plan-toast">
+        <div v-if="planNotice" class="plan-toast" :class="{ premium: isPremium }" role="status" @click="planNotice = ''">
+          {{ isPremium ? '👑' : '✅' }} {{ planNotice }}
+        </div>
+      </Transition>
       <RouterView />
     </main>
 
@@ -241,4 +265,12 @@ async function logout() {
   .main-content { margin-left: 0; padding: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .sidebar { transition: none; } }
+.plan-toast {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 100;
+  padding: 0.6rem 1.2rem; border-radius: 999px; font-weight: 800; cursor: pointer;
+  background: var(--brand-lime); color: #10140A; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+.plan-toast.premium { background: linear-gradient(135deg, #F5C542, #D99A1E); color: #1A1300; }
+.plan-toast-enter-active, .plan-toast-leave-active { transition: opacity 0.3s ease, transform 0.3s ease; }
+.plan-toast-enter-from, .plan-toast-leave-to { opacity: 0; transform: translate(-50%, -10px); }
 </style>
