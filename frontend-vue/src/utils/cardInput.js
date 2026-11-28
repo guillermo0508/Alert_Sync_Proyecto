@@ -1,14 +1,54 @@
 // Reglas de los campos de tarjeta (iguales en la web, la app del iPhone y el servidor).
 
-/** Número: solo dígitos, máximo 16, en grupos de 4. */
-export function formatCardNumber(text) {
-  const digits = String(text).replace(/\D/g, '').slice(0, 16)
-  return (digits.match(/.{1,4}/g) || []).join(' ')
+/**
+ * Marca por los primeros dígitos. AMEX usa 15 dígitos y CVV de 4; las demás, 16 y CVV de 3
+ * (igual que en la app del iPhone y en el servidor).
+ */
+export function cardBrand(number) {
+  const d = String(number || '').replace(/\D/g, '')
+  const p2 = Number(d.slice(0, 2)) || -1
+  const p3 = Number(d.slice(0, 3)) || -1
+  const p4 = Number(d.slice(0, 4)) || -1
+  let id = 'unknown'
+  if (d.startsWith('4')) id = 'visa'
+  else if (p2 === 34 || p2 === 37) id = 'amex'
+  else if ((p2 >= 51 && p2 <= 55) || (p4 >= 2221 && p4 <= 2720)) id = 'mastercard'
+  else if (p4 === 6011 || p2 === 65 || (p3 >= 644 && p3 <= 649)) id = 'discover'
+  const names = { visa: 'Visa', mastercard: 'Mastercard', amex: 'American Express', discover: 'Discover', unknown: 'Tarjeta' }
+  return {
+    id,
+    name: names[id],
+    numberLength: id === 'amex' ? 15 : 16,
+    cvvLength: id === 'amex' ? 4 : 3,
+  }
 }
 
-/** CVV: solo dígitos, máximo 3. */
-export function formatCvv(text) {
-  return String(text).replace(/\D/g, '').slice(0, 3)
+/** Texto para mostrar junto al número mientras se escribe. */
+export function brandLabel(number) {
+  if (!String(number || '').replace(/\D/g, '')) return 'La marca se detecta al escribir'
+  const b = cardBrand(number)
+  return `${b.name} · ${b.numberLength} dígitos · CVV de ${b.cvvLength}`
+}
+
+/** Número: solo dígitos, 15 (AMEX, en grupos 4-6-5) o 16 (en grupos de 4). */
+export function formatCardNumber(text) {
+  const all = String(text).replace(/\D/g, '')
+  const brand = cardBrand(all)
+  const digits = all.slice(0, brand.numberLength)
+  const groups = brand.id === 'amex' ? [4, 6, 5] : [4, 4, 4, 4]
+  const parts = []
+  let i = 0
+  for (const size of groups) {
+    if (i >= digits.length) break
+    parts.push(digits.slice(i, i + size))
+    i += size
+  }
+  return parts.join(' ')
+}
+
+/** CVV: solo dígitos, 4 con AMEX y 3 con las demás. */
+export function formatCvv(text, number = '') {
+  return String(text).replace(/\D/g, '').slice(0, cardBrand(number).cvvLength)
 }
 
 /**
@@ -42,9 +82,12 @@ export function isValidExpiry(expiry) {
 
 /** Mensaje de error, o null si la tarjeta es válida. */
 export function cardError({ number, expiry, cvv }) {
-  if (String(number).replace(/\D/g, '').length !== 16) return 'El número de tarjeta debe tener 16 dígitos.'
+  const brand = cardBrand(number)
+  if (String(number).replace(/\D/g, '').length !== brand.numberLength) {
+    return `El número de tarjeta ${brand.name === 'Tarjeta' ? '' : `${brand.name} `}debe tener ${brand.numberLength} dígitos.`
+  }
   if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry || '')) return 'Escribe el vencimiento como MM/AA (mes y año).'
   if (!isValidExpiry(expiry)) return 'La tarjeta está vencida.'
-  if (String(cvv).replace(/\D/g, '').length !== 3) return 'El CVV debe tener 3 dígitos.'
+  if (String(cvv).replace(/\D/g, '').length !== brand.cvvLength) return `El CVV debe tener ${brand.cvvLength} dígitos.`
   return null
 }

@@ -18,16 +18,33 @@ class PaymentCard extends Model
         return $this->belongsTo(User::class);
     }
 
-    /** Detecta la marca por los primeros dígitos. */
+    /** Detecta la marca por los primeros dígitos (igual que en la app y la web). */
     public static function detectBrand(string $number): string
     {
+        $d = preg_replace('/\D/', '', $number);
+        $p2 = (int) substr($d, 0, 2);
+        $p3 = (int) substr($d, 0, 3);
+        $p4 = (int) substr($d, 0, 4);
+
         return match (true) {
-            str_starts_with($number, '4') => 'VISA',
-            (bool) preg_match('/^(5[1-5]|2[2-7])/', $number) => 'MASTERCARD',
-            (bool) preg_match('/^3[47]/', $number) => 'AMEX',
-            (bool) preg_match('/^(6011|65)/', $number) => 'DISCOVER',
+            str_starts_with($d, '4') => 'VISA',
+            $p2 === 34 || $p2 === 37 => 'AMEX',
+            ($p2 >= 51 && $p2 <= 55) || ($p4 >= 2221 && $p4 <= 2720) => 'MASTERCARD',
+            $p4 === 6011 || $p2 === 65 || ($p3 >= 644 && $p3 <= 649) => 'DISCOVER',
             default => 'TARJETA',
         };
+    }
+
+    /** AMEX: 15 dígitos; las demás: 16. */
+    public static function numberLength(string $number): int
+    {
+        return static::detectBrand($number) === 'AMEX' ? 15 : 16;
+    }
+
+    /** AMEX: CVV de 4; las demás: 3. */
+    public static function cvvLength(string $number): int
+    {
+        return static::detectBrand($number) === 'AMEX' ? 4 : 3;
     }
 
     /**

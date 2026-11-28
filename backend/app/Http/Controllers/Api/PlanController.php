@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\PaymentCard;
 use App\Models\Plan;
+use App\Rules\CardCvv;
 use App\Rules\CardExpiry;
+use App\Rules\CardNumber;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -69,9 +71,9 @@ class PlanController extends Controller
         $request->validate([
             'plan_id' => ['required', 'in:basico,premium'],
             'card_id' => ['nullable', 'integer'],
-            'card_number' => ['required_without:card_id', 'nullable', 'digits:16'],
+            'card_number' => ['required_without:card_id', 'nullable', new CardNumber],
             'card_expiry' => ['required_without:card_id', 'nullable', 'string', new CardExpiry],
-            'card_cvv' => ['required_without:card_id', 'nullable', 'digits:3'],
+            'card_cvv' => ['required_without:card_id', 'nullable', new CardCvv],
             'card_name' => ['required_without:card_id', 'nullable', 'string', 'max:120'],
             'make_default' => ['sometimes', 'boolean'],
         ]);

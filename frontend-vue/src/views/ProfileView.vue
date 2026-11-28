@@ -1,5 +1,5 @@
 <script setup>
-import { formatCardNumber, formatExpiry, formatCvv, cardError } from '@/utils/cardInput'
+import { formatCardNumber, formatExpiry, formatCvv, cardError, cardBrand, brandLabel } from '@/utils/cardInput'
 import { ref, onMounted, computed } from 'vue'
 import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
@@ -58,6 +58,8 @@ function syncFromUser() {
 function handleCardNumberInput(e) {
   cardNumber.value = formatCardNumber(e.target.value)
   e.target.value = cardNumber.value
+  // Si cambia la marca (p. ej. de AMEX a Visa), el CVV se recorta a su nueva longitud.
+  cardCvv.value = formatCvv(cardCvv.value, cardNumber.value)
 }
 
 function handleCardExpiryInput(e) {
@@ -203,11 +205,12 @@ async function onAutoRenewChange() {
               maxlength="19"
               @input="handleCardNumberInput"
             />
+            <small class="card-brand-hint" :data-brand="cardBrand(cardNumber).id">{{ brandLabel(cardNumber) }}</small>
             <p v-if="savedCardLabel" class="hint-text">Ingresa el número completo para reemplazar la tarjeta guardada.</p>
           </div>
           <div class="form-row">
             <div class="form-group flex-1">
-              <label class="form-label">Expiración (MM/YY)</label>
+              <label class="form-label">Expiración (MM/AA)</label>
               <input
                 type="text"
                 :value="cardExpiry"
@@ -220,7 +223,7 @@ async function onAutoRenewChange() {
             </div>
             <div class="form-group flex-1">
               <label class="form-label">CVV</label>
-              <input v-model="cardCvv" type="password" required class="form-input" placeholder="•••" maxlength="3" inputmode="numeric" @input="cardCvv = formatCvv($event.target.value); $event.target.value = cardCvv" />
+              <input v-model="cardCvv" type="password" required class="form-input" :placeholder="cardBrand(cardNumber).cvvLength === 4 ? '••••' : '•••'" :maxlength="cardBrand(cardNumber).cvvLength" inputmode="numeric" @input="cardCvv = formatCvv($event.target.value, cardNumber); $event.target.value = cardCvv" />
             </div>
           </div>
 
@@ -296,4 +299,9 @@ async function onAutoRenewChange() {
   color: var(--text-secondary); font-size: 0.9rem; cursor: pointer;
 }
 .hint-text { margin-top: var(--space-2); font-size: 0.8rem; color: var(--text-muted); }
+.card-brand-hint { display: block; margin-top: 0.35rem; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
+.card-brand-hint[data-brand="visa"] { color: #4F7DF3; }
+.card-brand-hint[data-brand="mastercard"] { color: #F79E1B; }
+.card-brand-hint[data-brand="amex"] { color: #2E9BD6; }
+.card-brand-hint[data-brand="discover"] { color: #FF6000; }
 </style>

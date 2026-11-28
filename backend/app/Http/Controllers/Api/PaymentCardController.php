@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Models\PaymentCard;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use App\Rules\CardCvv;
 use App\Rules\CardExpiry;
+use App\Rules\CardNumber;
 use Illuminate\Http\Request;
 
 /**
@@ -32,9 +34,9 @@ class PaymentCardController extends Controller
             $request->merge(['card_number' => preg_replace('/\s+/', '', (string) $request->input('card_number'))]);
         }
         $validated = $request->validate([
-            'card_number' => ['required', 'digits:16'],
+            'card_number' => ['required', new CardNumber],
             'card_expiry' => ['required', 'string', new CardExpiry],
-            'card_cvv' => ['required', 'digits:3'],
+            'card_cvv' => ['required', new CardCvv],
             'card_name' => ['required', 'string', 'max:120'],
             'make_default' => ['sometimes', 'boolean'],
         ]);

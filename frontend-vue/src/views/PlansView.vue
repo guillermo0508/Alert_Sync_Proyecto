@@ -1,5 +1,5 @@
 <script setup>
-import { formatCardNumber, formatExpiry, formatCvv, cardError } from '@/utils/cardInput'
+import { formatCardNumber, formatExpiry, formatCvv, cardError, cardBrand, brandLabel } from '@/utils/cardInput'
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/services/api'
@@ -23,6 +23,8 @@ const checkoutError = ref('')
 const handleCardNumberInput = (e) => {
   cardNumber.value = formatCardNumber(e.target.value)
   e.target.value = cardNumber.value
+  // Si cambia la marca (p. ej. de AMEX a Visa), el CVV se recorta a su nueva longitud.
+  cardCvv.value = formatCvv(cardCvv.value, cardNumber.value)
 }
 
 const handleCardExpiryInput = (e) => {
@@ -198,6 +200,7 @@ async function processPayment() {
             <div class="form-group">
               <label>Número de Tarjeta</label>
               <input type="text" :value="cardNumber" @input="handleCardNumberInput" required class="form-input" placeholder="4111 2222 3333 4444" maxlength="19" />
+              <small class="card-brand-hint" :data-brand="cardBrand(cardNumber).id">{{ brandLabel(cardNumber) }}</small>
             </div>
 
             <div class="form-row">
@@ -207,7 +210,7 @@ async function processPayment() {
               </div>
               <div class="form-group flex-1">
                 <label>CVV</label>
-                <input type="password" v-model="cardCvv" required class="form-input" placeholder="•••" maxlength="3" inputmode="numeric" @input="cardCvv = formatCvv($event.target.value); $event.target.value = cardCvv" />
+                <input type="password" v-model="cardCvv" required class="form-input" :placeholder="cardBrand(cardNumber).cvvLength === 4 ? '••••' : '•••'" :maxlength="cardBrand(cardNumber).cvvLength" inputmode="numeric" @input="cardCvv = formatCvv($event.target.value, cardNumber); $event.target.value = cardCvv" />
               </div>
             </div>
           </div>
@@ -472,4 +475,9 @@ async function processPayment() {
   font-weight: 800;
   color: var(--brand-lime);
 }
+.card-brand-hint { display: block; margin-top: 0.35rem; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
+.card-brand-hint[data-brand="visa"] { color: #4F7DF3; }
+.card-brand-hint[data-brand="mastercard"] { color: #F79E1B; }
+.card-brand-hint[data-brand="amex"] { color: #2E9BD6; }
+.card-brand-hint[data-brand="discover"] { color: #FF6000; }
 </style>
