@@ -102,15 +102,7 @@ class PaymentCardController extends Controller
 
     private function makeDefault(User $user, PaymentCard $card): void
     {
-        PaymentCard::where('user_id', $user->id)->update(['is_default' => false]);
-        $card->is_default = true;
-        $card->save();
-
-        // Copia en users para la web y el cobro automático (no cambia auto_renew).
-        $user->payment_card_last_four = $card->last_four;
-        $user->payment_card_name = $card->card_name;
-        $user->payment_card_expiry = $card->card_expiry;
-        $user->save();
+        $card->makeDefaultFor($user);
     }
 
     /** Si el usuario ya tenía una tarjeta (guardada antes de esta función), se agrega a la lista. */
@@ -139,12 +131,6 @@ class PaymentCardController extends Controller
 
     private function detectBrand(string $number): string
     {
-        return match (true) {
-            str_starts_with($number, '4') => 'VISA',
-            (bool) preg_match('/^(5[1-5]|2[2-7])/', $number) => 'MASTERCARD',
-            (bool) preg_match('/^3[47]/', $number) => 'AMEX',
-            (bool) preg_match('/^(6011|65)/', $number) => 'DISCOVER',
-            default => 'TARJETA',
-        };
+        return PaymentCard::detectBrand($number);
     }
 }
