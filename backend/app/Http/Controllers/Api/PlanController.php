@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\PaymentCard;
 use App\Models\Plan;
+use App\Rules\CardExpiry;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -60,13 +61,17 @@ class PlanController extends Controller
 
     public function change(Request $request): JsonResponse
     {
+        // Se aceptan espacios en el número ("4242 4242 …"): se quitan antes de validar.
+        if ($request->filled('card_number')) {
+            $request->merge(['card_number' => preg_replace('/\s+/', '', (string) $request->input('card_number'))]);
+        }
         // Se paga con una tarjeta guardada (card_id) o con una nueva (que se guarda en la lista).
         $request->validate([
             'plan_id' => ['required', 'in:basico,premium'],
             'card_id' => ['nullable', 'integer'],
-            'card_number' => ['required_without:card_id', 'nullable', 'string', 'min:16', 'max:19'],
-            'card_expiry' => ['required_without:card_id', 'nullable', 'string', 'regex:/^(0[1-9]|1[0-2])\/[0-9]{2}$/'],
-            'card_cvv' => ['required_without:card_id', 'nullable', 'string', 'digits_between:3,4'],
+            'card_number' => ['required_without:card_id', 'nullable', 'digits:16'],
+            'card_expiry' => ['required_without:card_id', 'nullable', 'string', new CardExpiry],
+            'card_cvv' => ['required_without:card_id', 'nullable', 'digits:3'],
             'card_name' => ['required_without:card_id', 'nullable', 'string', 'max:120'],
             'make_default' => ['sometimes', 'boolean'],
         ]);

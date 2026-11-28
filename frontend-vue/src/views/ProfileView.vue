@@ -1,4 +1,5 @@
 <script setup>
+import { formatCardNumber, formatExpiry, formatCvv, cardError } from '@/utils/cardInput'
 import { ref, onMounted, computed } from 'vue'
 import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
@@ -55,20 +56,13 @@ function syncFromUser() {
 }
 
 function handleCardNumberInput(e) {
-  let value = e.target.value.replace(/\D/g, '')
-  if (value.length > 16) value = value.slice(0, 16)
-  const parts = value.match(/.{1,4}/g) || []
-  cardNumber.value = parts.join(' ')
+  cardNumber.value = formatCardNumber(e.target.value)
+  e.target.value = cardNumber.value
 }
 
 function handleCardExpiryInput(e) {
-  let value = e.target.value.replace(/\D/g, '')
-  if (value.length > 4) value = value.slice(0, 4)
-  if (value.length > 2) {
-    cardExpiry.value = value.slice(0, 2) + '/' + value.slice(2)
-  } else {
-    cardExpiry.value = value
-  }
+  cardExpiry.value = formatExpiry(e.target.value)
+  e.target.value = cardExpiry.value
 }
 
 async function saveProfile() {
@@ -94,6 +88,11 @@ async function saveProfile() {
 
 async function savePaymentMethod() {
   paymentError.value = ''
+  const invalid = cardError({ number: cardNumber.value, expiry: cardExpiry.value, cvv: cardCvv.value })
+  if (invalid) {
+    paymentError.value = invalid
+    return
+  }
   paymentToast.value = ''
   paymentLoading.value = true
   try {
@@ -214,14 +213,14 @@ async function onAutoRenewChange() {
                 :value="cardExpiry"
                 required
                 class="form-input"
-                placeholder="MM/YY"
+                placeholder="MM/AA"
                 maxlength="5"
                 @input="handleCardExpiryInput"
               />
             </div>
             <div class="form-group flex-1">
               <label class="form-label">CVV</label>
-              <input v-model="cardCvv" type="password" required class="form-input" placeholder="•••" maxlength="4" />
+              <input v-model="cardCvv" type="password" required class="form-input" placeholder="•••" maxlength="3" inputmode="numeric" @input="cardCvv = formatCvv($event.target.value); $event.target.value = cardCvv" />
             </div>
           </div>
 

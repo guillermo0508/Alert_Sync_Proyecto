@@ -1,4 +1,5 @@
 <script setup>
+import { formatCardNumber, formatExpiry, formatCvv, cardError } from '@/utils/cardInput'
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/services/api'
@@ -20,20 +21,13 @@ const cardName = ref('')
 const checkoutError = ref('')
 
 const handleCardNumberInput = (e) => {
-  let value = e.target.value.replace(/\D/g, '')
-  if (value.length > 16) value = value.slice(0, 16)
-  const parts = value.match(/.{1,4}/g) || []
-  cardNumber.value = parts.join(' ')
+  cardNumber.value = formatCardNumber(e.target.value)
+  e.target.value = cardNumber.value
 }
 
 const handleCardExpiryInput = (e) => {
-  let value = e.target.value.replace(/\D/g, '')
-  if (value.length > 4) value = value.slice(0, 4)
-  if (value.length > 2) {
-    cardExpiry.value = value.slice(0, 2) + '/' + value.slice(2)
-  } else {
-    cardExpiry.value = value
-  }
+  cardExpiry.value = formatExpiry(e.target.value)
+  e.target.value = cardExpiry.value
 }
 
 const currentPlan = computed(() => auth.user?.plan || 'Demo')
@@ -72,6 +66,12 @@ async function processPayment() {
   
   loading.value = true
   checkoutError.value = ''
+  const invalid = cardError({ number: cardNumber.value, expiry: cardExpiry.value, cvv: cardCvv.value })
+  if (invalid) {
+    checkoutError.value = invalid
+    loading.value = false
+    return
+  }
   
   try {
     const { data } = await api.post('/plans/change', {
@@ -203,11 +203,11 @@ async function processPayment() {
             <div class="form-row">
               <div class="form-group flex-1">
                 <label>Expiración (MM/YY)</label>
-                <input type="text" :value="cardExpiry" @input="handleCardExpiryInput" required class="form-input" placeholder="MM/YY" maxlength="5" />
+                <input type="text" :value="cardExpiry" @input="handleCardExpiryInput" required class="form-input" placeholder="MM/AA" maxlength="5" />
               </div>
               <div class="form-group flex-1">
                 <label>CVV</label>
-                <input type="password" v-model="cardCvv" required class="form-input" placeholder="•••" maxlength="4" />
+                <input type="password" v-model="cardCvv" required class="form-input" placeholder="•••" maxlength="3" inputmode="numeric" @input="cardCvv = formatCvv($event.target.value); $event.target.value = cardCvv" />
               </div>
             </div>
           </div>

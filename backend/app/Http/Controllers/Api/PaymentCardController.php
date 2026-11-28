@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PaymentCard;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use App\Rules\CardExpiry;
 use Illuminate\Http\Request;
 
 /**
@@ -26,10 +27,14 @@ class PaymentCardController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        // Se aceptan espacios en el número ("4242 4242 …"): se quitan antes de validar.
+        if ($request->filled('card_number')) {
+            $request->merge(['card_number' => preg_replace('/\s+/', '', (string) $request->input('card_number'))]);
+        }
         $validated = $request->validate([
-            'card_number' => ['required', 'string', 'min:16', 'max:19'],
-            'card_expiry' => ['required', 'string', 'regex:/^(0[1-9]|1[0-2])\/[0-9]{2}$/'],
-            'card_cvv' => ['required', 'string', 'digits_between:3,4'],
+            'card_number' => ['required', 'digits:16'],
+            'card_expiry' => ['required', 'string', new CardExpiry],
+            'card_cvv' => ['required', 'digits:3'],
             'card_name' => ['required', 'string', 'max:120'],
             'make_default' => ['sometimes', 'boolean'],
         ]);
