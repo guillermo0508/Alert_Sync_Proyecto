@@ -5,6 +5,26 @@ import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const contacts = ref([])
+
+// Límite de contactos según el plan (igual que en la app del iPhone): Básico 5, Premium 15.
+const planName = computed(() => {
+  const plan = (auth.user?.plan || 'Demo').toLowerCase()
+  if (plan === 'premium') return 'Premium'
+  if (plan === 'básico' || plan === 'basico') return 'Básico'
+  return 'Demo'
+})
+const maxContacts = computed(() => ({ Premium: 15, 'Básico': 5 })[planName.value] || 0)
+const atLimit = computed(() => contacts.value.length >= maxContacts.value)
+const limitText = computed(() => {
+  if (maxContacts.value === 0) return 'Contrata un plan para agregar contactos de emergencia.'
+  if (atLimit.value) {
+    return planName.value === 'Premium'
+      ? 'Llegaste al límite de tu plan Premium.'
+      : 'Llegaste al límite de tu plan Básico. Con Premium puedes tener hasta 15.'
+  }
+  const left = maxContacts.value - contacts.value.length
+  return `Puedes agregar ${left} contacto${left === 1 ? '' : 's'} más.`
+})
 const loading = ref(true)
 const error = ref('')
 const showForm = ref(false)
@@ -157,14 +177,25 @@ function channels(contact) {
     <div class="topbar">
       <div>
         <h1>Contactos de Emergencia</h1>
-        <p>Gestiona quién recibirá tus alertas SOS</p>
+        <p>{{ contacts.length }}/{{ maxContacts }} contactos · Gestiona quién recibirá tus alertas SOS</p>
       </div>
-      <button class="btn btn-primary btn-sm" @click="showForm = !showForm">
+      <button class="btn btn-primary btn-sm" :disabled="!showForm && atLimit"
+              :title="atLimit ? limitText : ''" @click="showForm = !showForm">
         {{ showForm ? 'Cancelar' : '+ Agregar contacto' }}
       </button>
     </div>
 
     <div class="page-content">
+      <div class="limit-card" :class="{ premium: planName === 'Premium', full: atLimit }">
+        <div class="limit-head">
+          <strong class="limit-count">{{ contacts.length }} / {{ maxContacts }}</strong>
+          <span class="limit-label">contactos</span>
+          <span class="limit-plan">Plan {{ planName }}</span>
+        </div>
+        <div class="limit-bar"><div class="limit-fill" :style="{ width: (maxContacts ? Math.min(contacts.length / maxContacts, 1) * 100 : 0) + '%' }"></div></div>
+        <p class="limit-text">{{ limitText }}</p>
+      </div>
+
       <div v-if="error" class="error-box">{{ error }}</div>
       <div v-if="toast" class="toast-box">{{ toast }}</div>
 
@@ -276,5 +307,23 @@ function channels(contact) {
   background: var(--glass-bg); border-radius: var(--radius-xl);
 }
 @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
+.limit-card {
+  margin-bottom: var(--space-5); padding: var(--space-4) var(--space-5);
+  background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg);
+  --limit-accent: var(--brand-lime);
+}
+.limit-card.premium { --limit-accent: #F5C542; }
+.limit-card.full { --limit-accent: #F59E0B; }
+.limit-head { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.6rem; }
+.limit-count { font-size: 1.5rem; font-weight: 900; }
+.limit-label { color: var(--text-secondary); font-size: 0.85rem; }
+.limit-plan {
+  margin-left: auto; padding: 2px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 800;
+  background: var(--limit-accent); color: #10140A;
+}
+.limit-bar { height: 8px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.limit-fill { height: 100%; background: var(--limit-accent); transition: width 0.3s ease; }
+.limit-text { margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); }
+.limit-card.full .limit-text { color: #F59E0B; }
 .status-note { color: var(--text-secondary); margin-top: var(--space-2); }
 </style>
