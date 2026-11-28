@@ -117,7 +117,9 @@ class PlanController extends Controller
         $user->save();
         $planAmount = Plan::getOrDefault($request->plan_id)->price_amount;
         $planPrice = "\${$planAmount}/mes";
-        $formattedExpiresAt = $user->plan_expires_at->format('d/m/Y');
+        // En hora de México, igual que la app y los correos SOS (en UTC, un pago hecho en la noche
+        // aparecía con el día siguiente: la app decía 27/12 y el recibo 28/12).
+        $formattedExpiresAt = $user->plan_expires_at->copy()->timezone('America/Mexico_City')->format('d/m/Y');
 
         Payment::create([
             'user_id' => $user->id,

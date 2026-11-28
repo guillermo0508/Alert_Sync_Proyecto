@@ -78,4 +78,18 @@ class PlanChangeWithSavedCardTest extends TestCase
         $this->postJson('/api/plans/change', ['plan_id' => 'premium', 'card_id' => $card->id])
             ->assertStatus(422);
     }
+
+    public function test_receipt_date_uses_mexico_time(): void
+    {
+        // 27/11 a las 7:14 p.m. en México = 28/11 01:14 UTC. El recibo debe decir 27/12, no 28/12.
+        \Illuminate\Support\Carbon::setTestNow(\Illuminate\Support\Carbon::parse('2026-11-28 01:14:00', 'UTC'));
+        Sanctum::actingAs(User::factory()->create(['plan' => 'Básico']));
+
+        $this->postJson('/api/plans/change', ['plan_id' => 'premium'] + $this->card('4242424242424242'))->assertOk();
+
+        Mail::assertSent(\App\Mail\PaymentReceipt::class, function ($mail) {
+            return str_contains(json_encode(get_object_vars($mail)), '27\/12\/2026');
+        });
+        \Illuminate\Support\Carbon::setTestNow();
+    }
 }
